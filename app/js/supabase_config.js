@@ -5,7 +5,7 @@
 
 const SupabaseConfig = {
   // Cấu hình mặc định của dự án (Có thể tuỳ chỉnh hoặc ghi đè từ LocalStorage)
-  DEFAULT_URL: 'https://ktessxzesjrsjcngsmpc.supabase.co,
+  DEFAULT_URL: 'https://ktessxzesjrsjcngsmpc.supabase.co',
   DEFAULT_ANON_KEY: 'sb_publishable_2gUybT58Q_Bqzs54Y2ZiUg_dQEuvKQT',
 
   getUrl() {
