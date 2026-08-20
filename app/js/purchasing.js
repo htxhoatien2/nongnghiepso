@@ -1169,3 +1169,6 @@ Kính đề nghị hộ nông dân kiểm tra đối soát!`;
     alert('Đã xóa trắng toàn bộ dữ liệu phiên cân trong phân hệ Thu Mua thành công!');
   }
 };
+
+// Expose globally
+window.AgriPurchasing = AgriPurchasing;

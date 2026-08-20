@@ -812,3 +812,6 @@ const AgriAnalytics = {
     document.body.removeChild(link);
   }
 };
+
+// Expose globally
+window.AgriAnalytics = AgriAnalytics;

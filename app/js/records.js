@@ -900,3 +900,6 @@ const AgriPlots = {
     printWin.document.close();
   }
 };
+
+// Expose globally
+window.AgriPlots = AgriPlots;

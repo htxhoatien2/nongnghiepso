@@ -816,3 +816,6 @@ const AgriFarmers = {
 function closeFarmerModal() {
   AgriFarmers.closeDetailModal();
 }
+
+// Expose globally
+window.AgriFarmers = AgriFarmers;

@@ -788,3 +788,6 @@ function closeReceiptModal() {
   const modal = document.getElementById('modal-receipt-preview');
   if (modal) modal.classList.remove('open');
 }
+
+// Expose globally
+window.AgriServices = AgriServices;

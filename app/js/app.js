@@ -187,39 +187,49 @@ const App = {
     });
 
     // Invalidate Leaflet Map Size when returning to map
-    if (tabId === 'tab-map' && window.AgriMap) {
-      setTimeout(() => {
-        if (!AgriMap.map) {
-          AgriMap.init();
-          if (window.AgriMapEditor) AgriMapEditor.init();
-        }
-        if (AgriMap.map) {
-          AgriMap.map.invalidateSize(true);
-        }
-      }, 50);
-
-      setTimeout(() => {
-        if (AgriMap.map) {
-          AgriMap.map.invalidateSize(true);
-          if (AgriMap.geoJsonLayer && AgriMap.geoJsonLayer.getBounds && AgriMap.geoJsonLayer.getBounds().isValid()) {
-            AgriMap.map.fitBounds(AgriMap.geoJsonLayer.getBounds(), { padding: [20, 20] });
+    if (tabId === 'tab-map') {
+      const mapObj = window.AgriMap || (typeof AgriMap !== 'undefined' ? AgriMap : null);
+      if (mapObj) {
+        setTimeout(() => {
+          if (!mapObj.map) {
+            mapObj.init();
+            const edObj = window.AgriMapEditor || (typeof AgriMapEditor !== 'undefined' ? AgriMapEditor : null);
+            if (edObj) edObj.init();
           }
-        }
-      }, 250);
+          if (mapObj.map) {
+            mapObj.map.invalidateSize(true);
+          }
+        }, 50);
+
+        setTimeout(() => {
+          if (mapObj.map) {
+            mapObj.map.invalidateSize(true);
+            if (mapObj.geoJsonLayer && mapObj.geoJsonLayer.getBounds && mapObj.geoJsonLayer.getBounds().isValid()) {
+              mapObj.map.fitBounds(mapObj.geoJsonLayer.getBounds(), { padding: [20, 20] });
+            }
+          }
+        }, 250);
+      }
     }
 
     // Re-render Analytics charts if switching to analytics
     if (tabId === 'tab-analytics') {
-      setTimeout(() => {
-        if (window.AgriAnalytics) AgriAnalytics.renderSubTab(AgriAnalytics.currentSubTab || 'subtab-land');
-      }, 100);
+      const anaObj = window.AgriAnalytics || (typeof AgriAnalytics !== 'undefined' ? AgriAnalytics : null);
+      if (anaObj) {
+        setTimeout(() => {
+          anaObj.renderSubTab(anaObj.currentSubTab || 'subtab-land');
+        }, 100);
+      }
     }
 
     // Render Admin subsystem if switching to admin
     if (tabId === 'tab-admin') {
-      setTimeout(() => {
-        if (window.AgriAdmin) AgriAdmin.render();
-      }, 50);
+      const admObj = window.AgriAdmin || (typeof AgriAdmin !== 'undefined' ? AgriAdmin : null);
+      if (admObj) {
+        setTimeout(() => {
+          admObj.render();
+        }, 50);
+      }
     }
 
     if (window.lucide) lucide.createIcons();

@@ -1556,3 +1556,6 @@ const AgriMap = {
   }
 };
 
+// Expose globally
+window.AgriMap = AgriMap;
+
