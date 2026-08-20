@@ -69,6 +69,17 @@ const AgriMap = {
     this.setupMapClickEvents();
     this.bindUIEvents();
 
+    // Auto invalidate size on load & resize
+    setTimeout(() => {
+      if (this.map) {
+        this.map.invalidateSize(true);
+      }
+    }, 100);
+
+    window.addEventListener('resize', () => {
+      if (this.map) this.map.invalidateSize(true);
+    });
+
     console.log('AgriMap initialized successfully.');
   },
 
