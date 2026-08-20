@@ -189,10 +189,19 @@ const App = {
     });
 
     // Invalidate Leaflet Map Size when returning to map
-    if (tabId === 'tab-map' && window.AgriMap && AgriMap.map) {
+    if (tabId === 'tab-map' && window.AgriMap) {
       setTimeout(() => {
-        AgriMap.map.invalidateSize();
+        if (!AgriMap.map) {
+          AgriMap.init();
+        } else {
+          AgriMap.map.invalidateSize(true);
+        }
       }, 100);
+      setTimeout(() => {
+        if (AgriMap.map) {
+          AgriMap.map.invalidateSize(true);
+        }
+      }, 350);
     }
 
     // Re-render Analytics charts if switching to analytics
