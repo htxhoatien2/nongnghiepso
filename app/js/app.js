@@ -26,9 +26,7 @@ const App = {
     try { this.setupQuickSearch(); } catch (e) { console.error('setupQuickSearch error:', e); }
     try { this.setupExportSummary(); } catch (e) { console.error('setupExportSummary error:', e); }
 
-    // 4. Initialize Modules
-    try { AgriMap.init(); } catch (e) { console.error('AgriMap init error:', e); }
-    try { if (window.AgriMapEditor) AgriMapEditor.init(); } catch (e) { console.error('AgriMapEditor init error:', e); }
+    // 4. Initialize Core Data Modules
     try { AgriPlots.init(); } catch (e) { console.error('AgriPlots init error:', e); }
     try { AgriFarmers.init(); } catch (e) { console.error('AgriFarmers init error:', e); }
     try { AgriAnalytics.init(); } catch (e) { console.error('AgriAnalytics init error:', e); }
@@ -193,15 +191,21 @@ const App = {
       setTimeout(() => {
         if (!AgriMap.map) {
           AgriMap.init();
-        } else {
-          AgriMap.map.invalidateSize(true);
+          if (window.AgriMapEditor) AgriMapEditor.init();
         }
-      }, 100);
-      setTimeout(() => {
         if (AgriMap.map) {
           AgriMap.map.invalidateSize(true);
         }
-      }, 350);
+      }, 50);
+
+      setTimeout(() => {
+        if (AgriMap.map) {
+          AgriMap.map.invalidateSize(true);
+          if (AgriMap.geoJsonLayer && AgriMap.geoJsonLayer.getBounds && AgriMap.geoJsonLayer.getBounds().isValid()) {
+            AgriMap.map.fitBounds(AgriMap.geoJsonLayer.getBounds(), { padding: [20, 20] });
+          }
+        }
+      }, 250);
     }
 
     // Re-render Analytics charts if switching to analytics
