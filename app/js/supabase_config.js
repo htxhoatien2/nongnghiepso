@@ -5,8 +5,8 @@
 
 const SupabaseConfig = {
   // Cấu hình mặc định của dự án (Có thể tuỳ chỉnh hoặc ghi đè từ LocalStorage)
-  DEFAULT_URL: 'https://whqfqnfrgoxpypzrygvy.supabase.co',
-  DEFAULT_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndocWZxbmZyZ294cHlwenJ5Z3Z5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDgwMDAwMDAsImV4cCI6MjAyMzU3NjAwMH0.sample_key_placeholder',
+  DEFAULT_URL: 'https://ktessxzesjrsjcngsmpc.supabase.co,
+  DEFAULT_ANON_KEY: 'sb_publishable_2gUybT58Q_Bqzs54Y2ZiUg_dQEuvKQT',
 
   getUrl() {
     return localStorage.getItem('agrigis_supabase_url') || this.DEFAULT_URL;
