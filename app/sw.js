@@ -4,26 +4,26 @@
  * tự động lưu đệm và chỉ kích hoạt chế độ Offline khi mất sóng 4G/Wifi.
  */
 
-const CACHE_NAME = 'agrigis-pwa-v2.9.5';
+const CACHE_NAME = 'agrigis-pwa-v2.9.6';
 
 const PRECACHE_ASSETS = [
   './',
   './index.html',
   './manifest.json',
-  './css/style.css?v=2.9.5',
-  './data/data_embedded.js',
-  './js/supabase_config.js',
-  './js/data.js?v=2.9.5',
-  './js/auth.js?v=2.9.5',
-  './js/sync.js?v=2.9.5',
-  './js/admin.js?v=2.9.5',
-  './js/map.js?v=2.9.5',
-  './js/records.js?v=2.9.5',
-  './js/farmers.js?v=2.9.5',
-  './js/analytics.js?v=2.9.5',
-  './js/services.js?v=2.9.5',
-  './js/purchasing.js?v=2.9.5',
-  './js/app.js?v=2.9.5'
+  './css/style.css?v=2.9.6',
+  './data/data_embedded.js?v=2.9.6',
+  './js/supabase_config.js?v=2.9.6',
+  './js/data.js?v=2.9.6',
+  './js/auth.js?v=2.9.6',
+  './js/sync.js?v=2.9.6',
+  './js/admin.js?v=2.9.6',
+  './js/map.js?v=2.9.6',
+  './js/records.js?v=2.9.6',
+  './js/farmers.js?v=2.9.6',
+  './js/analytics.js?v=2.9.6',
+  './js/services.js?v=2.9.6',
+  './js/purchasing.js?v=2.9.6',
+  './js/app.js?v=2.9.6'
 ];
 
 // 1. INSTALL EVENT: Force immediate activation
