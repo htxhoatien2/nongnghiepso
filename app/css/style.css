@@ -864,6 +864,44 @@ body.dark-mode .zone-name-tag span {
   transform: scale(0.97);
 }
 
+/* Draggable Vertex Handle (Chốt kéo thả ranh giới bờ ruộng) */
+.vertex-drag-handle {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #f59e0b;
+  border: 3px solid #ffffff;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  transition: transform 0.15s ease, background 0.15s ease;
+  user-select: none;
+  touch-action: none;
+}
+
+.vertex-drag-handle:hover {
+  transform: scale(1.25);
+  background: #d97706;
+  border-color: #fef08a;
+  cursor: grab;
+}
+
+.vertex-drag-handle:active {
+  cursor: grabbing;
+  transform: scale(1.35);
+  background: #dc2626;
+  box-shadow: 0 0 15px rgba(220, 38, 38, 0.7);
+}
+
+.vertex-index {
+  color: #ffffff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
 /* ==========================================================================
    MAP FLOATING DETAIL DRAWER / POPUP SHEET
    ========================================================================== */

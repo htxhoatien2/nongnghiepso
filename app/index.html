@@ -58,7 +58,7 @@
   </script>
 
   <!-- Custom CSS with Cache Buster -->
-  <link rel="stylesheet" href="css/style.css?v=3.1.0">
+  <link rel="stylesheet" href="css/style.css?v=3.1.2">
 </head>
 <body class="light-mode">
   <div id="app" class="app-container">
@@ -2506,34 +2506,60 @@
               </div>
               <div class="form-group">
                 <label>Tổng Diện Tích Vùng (m²)</label>
-                <input type="number" id="zone-edit-area" min="0" step="1" placeholder="Tự động tính">
+                <input type="number" id="zone-edit-area" min="0" step="1" placeholder="Tự động tính khi kéo ranh giới">
               </div>
             </div>
 
-            <!-- ĐA ĐIỂM TỌA ĐỘ VÙNG (COORDINATE LIST & EDITOR) -->
-            <div class="coords-box">
-              <div class="coords-box-header">
-                <label style="font-weight: 700; font-size: 0.82rem; color: var(--primary); display: flex; align-items: center; gap: 5px;">
-                  <i data-lucide="compass"></i> Thông Số Đa Điểm Tọa Độ Ranh Giới Vùng (Đa giác GIS)
-                </label>
-                <button type="button" class="btn btn-sm btn-outline" onclick="AgriMap.addCoordinatePoint()"><i data-lucide="plus"></i> Thêm Điểm Tọa Độ</button>
-              </div>
-              <div class="table-responsive" style="max-height: 140px; overflow-y: auto; margin-top: 6px; border: 1px solid var(--border-color); border-radius: 6px;">
-                <table class="coords-table" style="width: 100%; border-collapse: collapse; font-size: 0.8rem;">
-                  <thead>
-                    <tr style="background: var(--bg-app); border-bottom: 1px solid var(--border-color);">
-                      <th style="width: 60px; padding: 6px;">Điểm</th>
-                      <th style="padding: 6px;">Vĩ độ (Latitude)</th>
-                      <th style="padding: 6px;">Kinh độ (Longitude)</th>
-                      <th style="width: 70px; text-align: center; padding: 6px;">Thao tác</th>
-                    </tr>
-                  </thead>
-                  <tbody id="zone-coords-tbody">
-                    <!-- Dynamic Coordinate Rows -->
-                  </tbody>
-                </table>
+            <!-- THANH CÔNG CỤ CHỈNH SỬA RANH GIỚI TRỰC QUAN TRÊN BẢN ĐỒ -->
+            <div class="boundary-action-banner" style="background: linear-gradient(135deg, rgba(5,150,105,0.08), rgba(2,132,199,0.08)); border: 1px solid rgba(5,150,105,0.25); border-radius: 12px; padding: 12px; margin-bottom: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div>
+                  <strong style="color: var(--primary); font-size: 0.88rem; display: flex; align-items: center; gap: 5px;">
+                    <i data-lucide="sparkles"></i> Chỉnh Sửa Ranh Giới Vùng Trực Tiếp Trên Bản Đồ
+                  </strong>
+                  <p style="font-size: 0.76rem; color: var(--text-muted); margin: 2px 0 0;">Không cần nhập số tọa độ! Chạm & kéo các điểm chốt trực quan trên ảnh vệ tinh hoặc vẽ lại theo ý muốn</p>
+                </div>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                  <button type="button" class="btn btn-emerald btn-sm" onclick="AgriMap.startVisualVertexEditing()" style="font-weight: 700; box-shadow: 0 2px 8px rgba(5,150,105,0.3);" title="Kéo thả điểm chốt ranh giới">
+                    <i data-lucide="move"></i> <span>🖐️ Kéo Điểm Chốt Ranh Giới</span>
+                  </button>
+                  <button type="button" class="btn btn-primary btn-sm" onclick="AgriMap.startRedrawCurrentZone()" style="font-weight: 700; background: #0284c7; border-color: #0284c7;" title="Chấm điểm vẽ lại ranh giới mới">
+                    <i data-lucide="pen-tool"></i> <span>✍️ Vẽ Lại Vùng Này</span>
+                  </button>
+                  <button type="button" class="btn btn-outline btn-sm" onclick="AgriMap.addGpsVertexToZone()" title="Lấy vị trí GPS thực tế ngoài đồng">
+                    <i data-lucide="crosshair"></i> <span>🎯 Thêm Điểm GPS</span>
+                  </button>
+                </div>
               </div>
             </div>
+
+            <!-- BẢNG TỌA ĐỘ KỸ THUẬT (COLLAPSIBLE ACCORDION) -->
+            <details class="coords-accordion" style="background: var(--bg-app); border: 1px solid var(--border-color); border-radius: 8px; padding: 6px 10px;">
+              <summary style="font-weight: 700; font-size: 0.78rem; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: space-between;">
+                <span><i data-lucide="compass" style="width:14px; height:14px; vertical-align:middle;"></i> Xem / Tinh chỉnh danh sách tọa độ kỹ thuật (<span id="coords-count-label">0 điểm</span>)</span>
+                <span style="font-size: 0.72rem; color: var(--primary);">Bấm để mở ▾</span>
+              </summary>
+              <div class="coords-box" style="margin-top: 8px;">
+                <div class="coords-box-header" style="display: flex; justify-content: flex-end; margin-bottom: 6px;">
+                  <button type="button" class="btn btn-sm btn-outline" onclick="AgriMap.addCoordinatePoint()"><i data-lucide="plus"></i> Thêm Điểm Tọa Độ</button>
+                </div>
+                <div class="table-responsive" style="max-height: 140px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 6px;">
+                  <table class="coords-table" style="width: 100%; border-collapse: collapse; font-size: 0.78rem;">
+                    <thead>
+                      <tr style="background: var(--bg-surface); border-bottom: 1px solid var(--border-color);">
+                        <th style="width: 50px; padding: 5px;">Điểm</th>
+                        <th style="padding: 5px;">Vĩ độ (Latitude)</th>
+                        <th style="padding: 5px;">Kinh độ (Longitude)</th>
+                        <th style="width: 60px; text-align: center; padding: 5px;">Xóa</th>
+                      </tr>
+                    </thead>
+                    <tbody id="zone-coords-tbody">
+                      <!-- Dynamic Coordinate Rows -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </details>
           </div>
 
           <hr style="border: 0; border-top: 1px solid var(--border-subtle); margin: 1.25rem 0;">
@@ -3487,23 +3513,23 @@
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 
   <!-- Embedded Data (Offline & file:// protocol support) -->
-  <script src="data/data_embedded.js?v=3.1.0"></script>
+  <script src="data/data_embedded.js?v=3.1.2"></script>
 
   <!-- Supabase JS SDK (v2) from CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase_config.js?v=3.1.0"></script>
+  <script src="js/supabase_config.js?v=3.1.2"></script>
 
   <!-- App JS Modules with Cache Buster -->
-  <script src="js/data.js?v=3.1.0"></script>
-  <script src="js/auth.js?v=3.1.0"></script>
-  <script src="js/sync.js?v=3.1.0"></script>
-  <script src="js/admin.js?v=3.1.0"></script>
-  <script src="js/map.js?v=3.1.0"></script>
-  <script src="js/records.js?v=3.1.0"></script>
-  <script src="js/farmers.js?v=3.1.0"></script>
-  <script src="js/analytics.js?v=3.1.0"></script>
-  <script src="js/services.js?v=3.1.0"></script>
-  <script src="js/purchasing.js?v=3.1.0"></script>
-  <script src="js/app.js?v=3.1.0"></script>
+  <script src="js/data.js?v=3.1.2"></script>
+  <script src="js/auth.js?v=3.1.2"></script>
+  <script src="js/sync.js?v=3.1.2"></script>
+  <script src="js/admin.js?v=3.1.2"></script>
+  <script src="js/map.js?v=3.1.2"></script>
+  <script src="js/records.js?v=3.1.2"></script>
+  <script src="js/farmers.js?v=3.1.2"></script>
+  <script src="js/analytics.js?v=3.1.2"></script>
+  <script src="js/services.js?v=3.1.2"></script>
+  <script src="js/purchasing.js?v=3.1.2"></script>
+  <script src="js/app.js?v=3.1.2"></script>
 </body>
 </html>

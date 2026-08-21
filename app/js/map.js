@@ -771,8 +771,26 @@ const AgriMap = {
       this.drawMode = null;
       this.hideDrawGuide();
 
-      // Open Modal to save zone
-      this.openCreateZoneModal(points, areaM2);
+      // Check if we are redrawing an existing zone
+      if (this.isRedrawingZone) {
+        this.isRedrawingZone = false;
+        this.currentZoneCoords = points.map(p => [Number(p[0].toFixed(6)), Number(p[1].toFixed(6))]);
+        const areaInput = document.getElementById('zone-edit-area');
+        if (areaInput) areaInput.value = areaM2;
+        
+        this.renderZoneCoordsTable();
+        const modal = document.getElementById('modal-zone-edit');
+        if (modal) modal.classList.add('open');
+
+        if (window.AgriSync && AgriSync.showLiveToast) {
+          AgriSync.showLiveToast(`✅ Đã vẽ lại ranh giới mới: ${AgriData.formatArea(areaM2)} (${points.length} đỉnh)`);
+        }
+      } else {
+        // Open Modal to create new zone
+        this.openCreateZoneModal(points, areaM2);
+      }
+    } else if (this.drawMode === 'vertex_edit') {
+      this.finishVisualVertexEditing();
     } else if (this.drawMode === 'measure_area') {
       if (this.drawPoints.length >= 3) {
         const areaM2 = this.calculateAreaM2(this.drawPoints);
@@ -792,6 +810,11 @@ const AgriMap = {
   },
 
   cancelDrawing() {
+    if (this.drawMode === 'vertex_edit') {
+      this.cancelVisualVertexEditing();
+      return;
+    }
+    this.isRedrawingZone = false;
     this.clearDrawingOverlays();
     this.drawMode = null;
     this.hideDrawGuide();
@@ -803,6 +826,191 @@ const AgriMap = {
     this.drawPoints = [];
     if (this.tempPolygon) { this.map.removeLayer(this.tempPolygon); this.tempPolygon = null; }
     if (this.tempPolyline) { this.map.removeLayer(this.tempPolyline); this.tempPolyline = null; }
+  },
+
+  // =========================================================================
+  // 3.5. INTERACTIVE VISUAL VERTEX DRAG & DROP EDITING (ON-MAP BOUNDARY EDITOR)
+  // =========================================================================
+
+  startVisualVertexEditing() {
+    if (!this.currentZoneCoords || this.currentZoneCoords.length < 3) {
+      alert('Vùng hiện tại chưa có đủ điểm tọa độ để kéo chỉnh. Hãy dùng tính năng [✍️ Vẽ Lại Vùng Này].');
+      return;
+    }
+
+    // Temporarily hide modal
+    const modal = document.getElementById('modal-zone-edit');
+    if (modal) modal.classList.remove('open');
+    this.closeBottomSheet();
+
+    this.clearDrawingOverlays();
+    this.drawMode = 'vertex_edit';
+
+    // Create temporary editable polygon
+    this.tempPolygon = L.polygon(this.currentZoneCoords, {
+      color: '#f59e0b',
+      fillColor: '#fde047',
+      fillOpacity: 0.45,
+      weight: 3,
+      dashArray: '6, 6'
+    }).addTo(this.map);
+
+    // Zoom to fit zone boundary
+    this.map.fitBounds(this.tempPolygon.getBounds(), { padding: [80, 80], maxZoom: 18 });
+
+    // Create Draggable Vertex Handles for each point
+    this.renderVertexHandles();
+
+    const areaM2 = this.calculateAreaM2(this.currentZoneCoords);
+    const ha = (areaM2 / 10000).toFixed(2);
+    this.showDrawGuide(`🖐️ <strong>Chạm & Kéo các chấm vàng/xanh</strong> trên bản đồ để căn chỉnh bờ ruộng | DT: <strong>${Number(areaM2).toLocaleString('vi-VN')} m²</strong> (${ha} ha)`);
+  },
+
+  renderVertexHandles() {
+    // Clear old markers
+    this.drawMarkers.forEach(m => this.map.removeLayer(m));
+    this.drawMarkers = [];
+
+    this.currentZoneCoords.forEach((pt, idx) => {
+      // Custom Draggable Handle Icon
+      const handleHtml = `
+        <div class="vertex-drag-handle" title="Kéo để chỉnh mốc #${idx+1} (Chạm để xóa)">
+          <span class="vertex-index">${idx+1}</span>
+        </div>
+      `;
+
+      const customIcon = L.divIcon({
+        className: 'vertex-div-icon',
+        html: handleHtml,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14]
+      });
+
+      const marker = L.marker([pt[0], pt[1]], {
+        draggable: true,
+        icon: customIcon,
+        zIndexOffset: 1000
+      }).addTo(this.map);
+
+      // Drag event to update coordinates dynamically
+      marker.on('drag', (e) => {
+        const latlng = e.target.getLatLng();
+        this.currentZoneCoords[idx] = [Number(latlng.lat.toFixed(6)), Number(latlng.lng.toFixed(6))];
+        
+        // Update polygon in real-time
+        if (this.tempPolygon) {
+          this.tempPolygon.setLatLngs(this.currentZoneCoords);
+        }
+
+        // Calculate and display live area
+        const areaM2 = this.calculateAreaM2(this.currentZoneCoords);
+        const ha = (areaM2 / 10000).toFixed(2);
+        const sao = (areaM2 / 500).toFixed(1);
+        this.updateDrawGuide(`🖐️ Đang kéo mốc <strong>#${idx+1}</strong> | DT: <strong>${Number(areaM2).toLocaleString('vi-VN')} m²</strong> (~<strong>${sao} sào</strong> | <strong>${ha} ha</strong>)`);
+      });
+
+      // Dragend event
+      marker.on('dragend', () => {
+        this.renderZoneCoordsTable();
+        const areaM2 = this.calculateAreaM2(this.currentZoneCoords);
+        const areaInput = document.getElementById('zone-edit-area');
+        if (areaInput) areaInput.value = areaM2;
+      });
+
+      // Click to delete point if > 3 points
+      marker.on('click', () => {
+        if (this.currentZoneCoords.length <= 3) {
+          alert('Ranh giới cần tối thiểu 3 điểm chốt để tạo thành đa giác khép kín!');
+          return;
+        }
+        if (confirm(`Bạn có muốn xóa điểm chốt #${idx+1} này không?`)) {
+          this.currentZoneCoords.splice(idx, 1);
+          if (this.tempPolygon) this.tempPolygon.setLatLngs(this.currentZoneCoords);
+          this.renderVertexHandles();
+          this.renderZoneCoordsTable();
+          const areaM2 = this.calculateAreaM2(this.currentZoneCoords);
+          const areaInput = document.getElementById('zone-edit-area');
+          if (areaInput) areaInput.value = areaM2;
+        }
+      });
+
+      this.drawMarkers.push(marker);
+    });
+  },
+
+  finishVisualVertexEditing() {
+    const areaM2 = this.calculateAreaM2(this.currentZoneCoords);
+    const areaInput = document.getElementById('zone-edit-area');
+    if (areaInput) areaInput.value = areaM2;
+
+    this.clearDrawingOverlays();
+    this.drawMode = null;
+    this.hideDrawGuide();
+
+    this.renderZoneCoordsTable();
+    const modal = document.getElementById('modal-zone-edit');
+    if (modal) modal.classList.add('open');
+
+    if (window.AgriSync && AgriSync.showLiveToast) {
+      AgriSync.showLiveToast(`✅ Đã nắn chỉnh ranh giới thành công: ${AgriData.formatArea(areaM2)}`);
+    }
+  },
+
+  cancelVisualVertexEditing() {
+    this.clearDrawingOverlays();
+    this.drawMode = null;
+    this.hideDrawGuide();
+
+    const modal = document.getElementById('modal-zone-edit');
+    if (modal) modal.classList.add('open');
+  },
+
+  startRedrawCurrentZone() {
+    // Hide modal and activate redraw mode
+    const modal = document.getElementById('modal-zone-edit');
+    if (modal) modal.classList.remove('open');
+    this.closeBottomSheet();
+
+    this.isRedrawingZone = true;
+    this.startDrawPolygon();
+    this.showDrawGuide('✍️ <strong>Chấm các điểm mới trên ảnh vệ tinh</strong> để vẽ lại ranh giới vùng này. Bấm [Hoàn thành] khi xong.');
+  },
+
+  addGpsVertexToZone() {
+    if (!navigator.geolocation) {
+      alert('Thiết bị không hỗ trợ GPS.');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = Number(pos.coords.latitude.toFixed(6));
+        const lng = Number(pos.coords.longitude.toFixed(6));
+        const accuracy = Math.round(pos.coords.accuracy);
+
+        this.currentZoneCoords.push([lat, lng]);
+        this.renderZoneCoordsTable();
+
+        const areaM2 = this.calculateAreaM2(this.currentZoneCoords);
+        const areaInput = document.getElementById('zone-edit-area');
+        if (areaInput) areaInput.value = areaM2;
+
+        if (this.drawMode === 'vertex_edit') {
+          if (this.tempPolygon) this.tempPolygon.setLatLngs(this.currentZoneCoords);
+          this.renderVertexHandles();
+        }
+
+        if (window.AgriSync && AgriSync.showLiveToast) {
+          AgriSync.showLiveToast(`🎯 Đã thêm đỉnh GPS thực địa: ${lat}, ${lng} (±${accuracy}m)`);
+        } else {
+          alert(`Đã thêm đỉnh GPS: ${lat}, ${lng} (Độ chính xác: ±${accuracy}m)`);
+        }
+      },
+      (err) => {
+        alert('Không thể lấy vị trí GPS. Vui lòng kiểm tra quyền vị trí trên thiết bị.');
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
   },
 
   calculateAreaM2(points) {
@@ -961,6 +1169,9 @@ const AgriMap = {
 
   renderZoneCoordsTable() {
     const tbody = document.getElementById('zone-coords-tbody');
+    const countLabel = document.getElementById('coords-count-label');
+    if (countLabel) countLabel.textContent = `${this.currentZoneCoords.length} điểm`;
+
     if (!tbody) return;
 
     if (this.currentZoneCoords.length === 0) {

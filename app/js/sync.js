@@ -387,6 +387,58 @@ const AgriSync = {
       }
       if (window.AgriPurchasing) AgriPurchasing.filterSessions();
       if (window.AgriAnalytics) AgriAnalytics.renderKPIs();
+    } else if (packet.type === 'ZONE_UPDATED') {
+      const { zoneName, geoJson, plots } = packet.payload || {};
+      if (geoJson && AgriData) {
+        AgriData.geoJson = geoJson;
+        localStorage.setItem('agrigis_custom_geojson', JSON.stringify(geoJson));
+      }
+      if (zoneName && Array.isArray(plots) && AgriData && AgriData.data) {
+        const otherPlots = AgriData.data.plots.filter(p => p.xu_dong.toLowerCase().trim() !== zoneName.toLowerCase().trim());
+        AgriData.data.plots = [...otherPlots, ...plots];
+        AgriData.recalculateFarmers();
+        AgriData.recalculateZones();
+        AgriData.recalculateKPIs();
+        AgriData.saveCustomRawData();
+      }
+
+      // Re-render GIS Map & UI everywhere
+      if (window.AgriMap) {
+        AgriMap.renderGeoJSON();
+        AgriMap.renderZoneLabels();
+      }
+      if (window.AgriPlots && AgriPlots.render) AgriPlots.render();
+      if (window.AgriFarmers && AgriFarmers.render) AgriFarmers.render();
+      if (window.AgriAnalytics && AgriAnalytics.render) AgriAnalytics.render();
+
+      if (!isLocalBroadcast) {
+        this.showLiveToast(`🌾 [Realtime] Xứ đồng "${zoneName || 'Mới'}" vừa được cập nhật ranh giới từ thiết bị khác!`);
+      }
+    } else if (packet.type === 'ZONE_DELETED') {
+      const { zoneName, geoJson } = packet.payload || {};
+      if (geoJson && AgriData) {
+        AgriData.geoJson = geoJson;
+        localStorage.setItem('agrigis_custom_geojson', JSON.stringify(geoJson));
+      }
+      if (zoneName && AgriData && AgriData.data) {
+        AgriData.data.plots = AgriData.data.plots.filter(p => p.xu_dong.toLowerCase().trim() !== zoneName.toLowerCase().trim());
+        AgriData.recalculateFarmers();
+        AgriData.recalculateZones();
+        AgriData.recalculateKPIs();
+        AgriData.saveCustomRawData();
+      }
+
+      if (window.AgriMap) {
+        AgriMap.renderGeoJSON();
+        AgriMap.renderZoneLabels();
+      }
+      if (window.AgriPlots && AgriPlots.render) AgriPlots.render();
+      if (window.AgriFarmers && AgriFarmers.render) AgriFarmers.render();
+      if (window.AgriAnalytics && AgriAnalytics.render) AgriAnalytics.render();
+
+      if (!isLocalBroadcast) {
+        this.showLiveToast(`🗑️ [Realtime] Xứ đồng "${zoneName}" đã bị xóa khỏi hệ thống.`);
+      }
     } else if (packet.type === 'PLOT_UPDATED') {
       if (window.AgriPlots && window.App.currentTab === 'tab-plots') AgriPlots.renderTable();
       if (window.AgriMap && window.App.currentTab === 'tab-map') AgriMap.loadGeoJSON();

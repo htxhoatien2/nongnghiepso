@@ -169,6 +169,16 @@ const AgriData = {
       localStorage.setItem('agrigis_custom_raw_data', JSON.stringify(this.data));
     }
 
+    // 6. Broadcast Realtime Event to all other devices & cloud
+    if (window.AgriSync && AgriSync.broadcastEvent) {
+      AgriSync.broadcastEvent('ZONE_UPDATED', {
+        zoneName: zoneName,
+        geoJson: this.geoJson,
+        plots: zonePlots,
+        timestamp: Date.now()
+      });
+    }
+
     console.log('AgriData synced successfully:', {
       totalPlots: this.data.plots.length,
       totalFarmers: this.data.farmers.length,
@@ -196,6 +206,15 @@ const AgriData = {
 
     // 4. Persist
     this.saveCustomRawData();
+
+    // 5. Broadcast deletion to all devices
+    if (window.AgriSync && AgriSync.broadcastEvent) {
+      AgriSync.broadcastEvent('ZONE_DELETED', {
+        zoneName: zoneName,
+        geoJson: this.geoJson,
+        timestamp: Date.now()
+      });
+    }
   },
 
   // Save raw data to localStorage for offline persistence
