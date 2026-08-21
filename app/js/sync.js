@@ -1,28 +1,31 @@
 /**
- * AGRIGIS REAL-TIME & OFFLINE-FIRST DATABASE SYNCHRONIZATION ENGINE
- * (Động Cơ Đồng Bộ CSDL Thời Gian Thực & Ngoại Tuyến Tại Ruộng)
+ * AGRIGIS ULTRA-RESILIENT MULTI-TIER REAL-TIME & OFFLINE-FIRST DATABASE ENGINE
+ * (Hệ Thống Đồng Bộ CSDL Thời Gian Thực Đa Tầng & Ngoại Tuyến Tại Ruộng)
  * 
- * Tính năng chính:
- * 1. Supabase Realtime WebSocket: Kết nối 2 chiều tức thì (< 100ms) giữa tất cả các thiết bị (Webapp, Mobile).
- * 2. Postgres Changes Listener: Tự động bắt sự kiện INSERT, UPDATE, DELETE từ đám mây Supabase.
- * 3. Offline-First Sync Queue: Tự động lưu trên máy khi mất mạng ngoài đồng và tự đẩy lên đám mây khi có sóng lại.
- * 4. Two-Way State Sync: Tự động merge dữ liệu mới nhất mà không cần F5/tải lại trang.
- * 5. BroadcastChannel nội bộ: Đồng bộ song song giữa nhiều tab trên cùng 1 máy.
+ * 4 TẦNG ĐỒNG BỘ ĐỘC LẬP & TƯƠNG HỖ:
+ * 1. Tầng 1 (Supabase Realtime WebSocket): Lắng nghe sự kiện postgres_changes trực tiếp (< 50ms).
+ * 2. Tầng 2 (Supabase Realtime Broadcast): Truyền gói tin P2P tức thời giữa các trình duyệt.
+ * 3. Tầng 3 (Cloud Heartbeat Polling): Tự động quét kiểm tra định kỳ mỗi 4 giây (chống mất gói tin khi ngủ/đổi mạng).
+ * 4. Tầng 4 (Local BroadcastChannel & Offline Queue): Đồng bộ liên tab và lưu đệm an toàn khi mất sóng 4G.
  */
 
 const AgriSync = {
   isOnline: navigator.onLine,
   syncQueue: [],
+  broadcastQueue: [],
   broadcastChannel: null,
   supabaseChannel: null,
   isSupabaseSubscribed: false,
+  pollTimer: null,
+  lastSyncTime: Date.now(),
 
   init() {
     this.setupBroadcastChannel();
     this.setupNetworkListeners();
     this.loadSyncQueue();
     this.setupSupabaseRealtime();
-    this.pullCloudData();
+    this.pullCloudData(false);
+    this.startCloudPolling();
     this.updateStatusBadge();
   },
 
@@ -32,8 +35,8 @@ const AgriSync = {
   setupSupabaseRealtime() {
     const client = window.supabaseClient || (window.SupabaseConfig && SupabaseConfig.getClient());
     if (!client) {
-      console.warn('⚠️ [AgriSync] Supabase Client chưa sẵn sàng. Sẽ thử lại sau 1.5 giây...');
-      setTimeout(() => this.setupSupabaseRealtime(), 1500);
+      console.warn('⚠️ [AgriSync] Đang đợi Supabase SDK sẵn sàng...');
+      setTimeout(() => this.setupSupabaseRealtime(), 1200);
       return;
     }
 
@@ -51,33 +54,34 @@ const AgriSync = {
       })
       // 1. Lắng nghe thay đổi bảng Phiên Cân Lúa (purchasing_sessions)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'purchasing_sessions' }, payload => {
-        console.log('⚡ [Supabase Realtime] Thay đổi phiên cân lúa:', payload);
+        console.log('⚡ [Supabase Realtime] postgres_changes purchasing_sessions:', payload);
         this.handleRemotePurchasingChange(payload);
       })
       // 2. Lắng nghe thay đổi bảng Sổ Bộ Thửa Ruộng (plots)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'plots' }, payload => {
-        console.log('⚡ [Supabase Realtime] Thay đổi sổ thửa:', payload);
+        console.log('⚡ [Supabase Realtime] postgres_changes plots:', payload);
         this.handleRemotePlotChange(payload);
       })
       // 3. Lắng nghe thay đổi bảng Phí Dịch Vụ (service_payments)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'service_payments' }, payload => {
-        console.log('⚡ [Supabase Realtime] Thay đổi thu phí dịch vụ:', payload);
+        console.log('⚡ [Supabase Realtime] postgres_changes service_payments:', payload);
         this.handleRemotePaymentChange(payload);
       })
-      // 4. Lắng nghe Broadcast Message tức thì giữa các thiết bị
+      // 4. Lắng nghe Broadcast Message tức thì giữa các thiết bị (< 50ms)
       .on('broadcast', { event: 'agrigis_sync_packet' }, ({ payload }) => {
-        console.log('⚡ [Supabase Broadcast] Nhận tin nhắn Realtime:', payload);
+        console.log('⚡ [Supabase Broadcast] Nhận tin nhắn tức thì từ thiết bị khác:', payload);
         this.handleIncomingBroadcast(payload, false);
       })
       .subscribe((status, err) => {
-        console.log('📡 [Supabase Realtime Channel Status]:', status);
+        console.log('📡 [Supabase Realtime WebSocket Status]:', status);
         if (status === 'SUBSCRIBED') {
           this.isSupabaseSubscribed = true;
           this.updateStatusBadge('online');
-          console.log('✅ [AgriSync] Kết nối thành công Supabase Realtime 2 Chiều!');
+          this.flushBroadcastQueue();
+          console.log('✅ [AgriSync] Đã kích hoạt kênh Realtime 2 Chiều thành công!');
         } else if (status === 'CHANNEL_ERROR') {
           this.isSupabaseSubscribed = false;
-          console.warn('⚠️ [AgriSync] Lỗi kênh Realtime:', err);
+          console.warn('⚠️ [AgriSync] Kênh Realtime báo lỗi (có thể do kết nối mạng):', err);
           this.updateStatusBadge();
         } else if (status === 'TIMED_OUT' || status === 'CLOSED') {
           this.isSupabaseSubscribed = false;
@@ -86,12 +90,125 @@ const AgriSync = {
       });
 
     } catch (err) {
-      console.warn('⚠️ [AgriSync] Ngoại lệ khi thiết lập Supabase Realtime:', err);
+      console.warn('⚠️ [AgriSync] Ngoại lệ khi khởi tạo Realtime:', err);
     }
   },
 
   // ---------------------------------------------------------------------------
-  // 2. XỬ LÝ SỰ KIỆN TỪ ĐÁM MÂY (REMOTE POSTGRES CHANGES)
+  // 2. SMART CLOUD POLLING (ĐỒNG BỘ ĐỊNH KỲ DỰ PHÒNG KHÔNG SỢ MẤT DỮ LIỆU)
+  // ---------------------------------------------------------------------------
+  startCloudPolling() {
+    if (this.pollTimer) clearInterval(this.pollTimer);
+    // Tự động kiểm tra phiên cân mới mỗi 4 giây
+    this.pollTimer = setInterval(() => {
+      if (this.isOnline) {
+        this.pullCloudData(true);
+      }
+    }, 4000);
+
+    // Kéo dữ liệu ngay khi người dùng chuyển lại tab (focus)
+    if (typeof window !== 'undefined' && window.addEventListener) {
+      window.addEventListener('focus', () => {
+        if (this.isOnline) {
+          this.pullCloudData(true);
+          this.processSyncQueue();
+        }
+      });
+    }
+  },
+
+  // ---------------------------------------------------------------------------
+  // 3. TẢI DỮ LIỆU TỪ SUPABASE CLOUD (PULL DATA)
+  // ---------------------------------------------------------------------------
+  async pullCloudData(isSilent = false) {
+    const client = window.supabaseClient || (window.SupabaseConfig && SupabaseConfig.getClient());
+    if (!client || !this.isOnline) return;
+
+    try {
+      const { data: remoteSessions, error } = await client
+        .from('purchasing_sessions')
+        .select('*')
+        .order('created_datetime', { ascending: false })
+        .limit(300);
+
+      if (error) {
+        // Nếu lỗi do bảng chưa tồn tại trên Supabase, ghi log nhẹ
+        if (error.code === '42P01') {
+          console.warn('⚠️ [AgriSync] Bảng "purchasing_sessions" chưa được tạo trên Supabase.');
+        } else {
+          console.warn('⚠️ [AgriSync] Lỗi khi pull dữ liệu từ Supabase:', error.message);
+        }
+        return;
+      }
+
+      if (Array.isArray(remoteSessions) && remoteSessions.length > 0) {
+        if (!AgriData.data) AgriData.data = {};
+        if (!AgriData.data.purchasing_sessions) AgriData.data.purchasing_sessions = [];
+
+        let hasNewUpdates = false;
+        let newCount = 0;
+
+        remoteSessions.forEach(rs => {
+          const idx = AgriData.data.purchasing_sessions.findIndex(s => s.id === rs.id);
+          const formatted = {
+            id: rs.id,
+            stt: rs.stt || (AgriData.data.purchasing_sessions.length + 1),
+            ngay_can: (rs.created_datetime || rs.created_at || '').replace('T', ' ').substring(0, 19),
+            ho_sx: rs.farmer_name || rs.ho_sx || 'Hộ nông dân',
+            dia_chi: rs.farmer_address || rs.dia_chi || '',
+            dien_thoai: rs.farmer_phone || rs.dien_thoai || '',
+            xu_dong: rs.xu_dong || '',
+            can_bo_can: rs.can_bo_can || 'Cán bộ cân',
+            xe_nhan: rs.xe_nhan || 'Xe nhận',
+            loai_giong: rs.loai_giong || 'J02',
+            chi_tiet_can: Array.isArray(rs.batches_json) ? rs.batches_json : (rs.chi_tiet_can || []),
+            tong_so_bao: Number(rs.tong_so_bao || 0),
+            luong_tuoi_kg: Number(rs.luong_tuoi_kg || 0),
+            ty_le_tru_pct: rs.tru_do_am_pct != null ? Number(rs.tru_do_am_pct) : (rs.ty_le_tru_pct != null ? Number(rs.ty_le_tru_pct) : 12),
+            luong_kho_kg: Number(rs.luong_kho_kg || 0),
+            don_gia_kg: Number(rs.don_gia_kg || 8500),
+            thanh_tien: Number(rs.thanh_tien || 0),
+            ghi_chu: rs.note || rs.ghi_chu || ''
+          };
+
+          if (idx >= 0) {
+            // Cập nhật nếu có thay đổi
+            const current = AgriData.data.purchasing_sessions[idx];
+            if (current.thanh_tien !== formatted.thanh_tien || current.tong_so_bao !== formatted.tong_so_bao || current.ho_sx !== formatted.ho_sx) {
+              AgriData.data.purchasing_sessions[idx] = formatted;
+              hasNewUpdates = true;
+            }
+          } else {
+            // Thêm mới
+            AgriData.data.purchasing_sessions.unshift(formatted);
+            hasNewUpdates = true;
+            newCount++;
+          }
+        });
+
+        if (hasNewUpdates) {
+          AgriData.saveCustomRawData();
+          if (window.AgriPurchasing) {
+            AgriPurchasing.filterSessions();
+            AgriPurchasing.populateFilterDropdowns();
+          }
+          if (window.AgriAnalytics) {
+            AgriAnalytics.renderKPIs();
+          }
+
+          if (!isSilent && newCount > 0) {
+            this.showLiveToast(`🌾 [Realtime] Đã tự động đồng bộ ${newCount} phiên cân mới từ đám mây!`);
+          }
+          console.log(`✅ [AgriSync] Đồng bộ thành công ${remoteSessions.length} phiên cân từ Supabase Cloud!`);
+        }
+      }
+    } catch (err) {
+      console.warn('⚠️ [AgriSync] pullCloudData exception:', err);
+    }
+  },
+
+  // ---------------------------------------------------------------------------
+  // 4. XỬ LÝ SỰ KIỆN POSTGRES TỪ ĐÁM MÂY (REMOTE CHANGES)
   // ---------------------------------------------------------------------------
   handleRemotePurchasingChange(payload) {
     if (!window.AgriData || !AgriData.data) return;
@@ -116,7 +233,7 @@ const AgriSync = {
         chi_tiet_can: Array.isArray(newRec.batches_json) ? newRec.batches_json : (newRec.chi_tiet_can || []),
         tong_so_bao: Number(newRec.tong_so_bao || 0),
         luong_tuoi_kg: Number(newRec.luong_tuoi_kg || 0),
-        ty_le_tru_pct: newRec.tru_do_am_pct != null ? Number(newRec.tru_do_am_pct) : (newRec.ty_le_tru_pct != null ? Number(newRec.ty_le_tru_pct) : 12),
+        ty_le_tru_pct: newRec.tru_do_am_pct != null ? Number(newRec.tru_do_am_pct) : 12,
         luong_kho_kg: Number(newRec.luong_kho_kg || 0),
         don_gia_kg: Number(newRec.don_gia_kg || 8500),
         thanh_tien: Number(newRec.thanh_tien || 0),
@@ -132,7 +249,6 @@ const AgriSync = {
 
       AgriData.saveCustomRawData();
 
-      // Cập nhật giao diện nếu đang mở phân hệ Thu Mua
       if (window.AgriPurchasing) {
         AgriPurchasing.filterSessions();
         AgriPurchasing.populateFilterDropdowns();
@@ -141,20 +257,16 @@ const AgriSync = {
         AgriAnalytics.renderKPIs();
       }
 
-      this.showLiveToast(`⚖️ [Realtime] Phiên cân mới #${formatted.stt} (${formatted.ho_sx} - ${formatted.luong_tuoi_kg} kg) vừa được đồng bộ từ đám mây!`);
+      this.showLiveToast(`🌾 [Realtime] Phiên cân mới của hộ "${formatted.ho_sx}" (${formatted.luong_tuoi_kg} kg) vừa được lưu!`);
 
     } else if (eventType === 'DELETE') {
       if (!oldRec || !oldRec.id) return;
       AgriData.data.purchasing_sessions = AgriData.data.purchasing_sessions.filter(s => s.id !== oldRec.id);
       AgriData.saveCustomRawData();
 
-      if (window.AgriPurchasing) {
-        AgriPurchasing.filterSessions();
-      }
-      if (window.AgriAnalytics) {
-        AgriAnalytics.renderKPIs();
-      }
-      this.showLiveToast(`🗑️ [Realtime] Một phiên cân vừa được xóa từ hệ thống.`);
+      if (window.AgriPurchasing) AgriPurchasing.filterSessions();
+      if (window.AgriAnalytics) AgriAnalytics.renderKPIs();
+      this.showLiveToast(`🗑️ [Realtime] Một phiên cân vừa được xóa.`);
     }
   },
 
@@ -188,71 +300,12 @@ const AgriSync = {
 
       if (window.AgriServices && window.App.currentTab === 'tab-services') AgriServices.render();
       if (window.AgriAnalytics) AgriAnalytics.renderKPIs();
-      this.showLiveToast(`💰 [Realtime] Khoản thu dịch vụ mới (${Number(newRec.amount_paid || 0).toLocaleString('vi-VN')} đ) vừa được ghi nhận!`);
+      this.showLiveToast(`💰 [Realtime] Khoản thu dịch vụ (${Number(newRec.amount_paid || 0).toLocaleString('vi-VN')} đ) vừa được ghi nhận!`);
     }
   },
 
   // ---------------------------------------------------------------------------
-  // 3. TẢI DỮ LIỆU ĐẦU KỲ TỪ SUPABASE CLOUD (PULL DATA)
-  // ---------------------------------------------------------------------------
-  async pullCloudData() {
-    const client = window.supabaseClient || (window.SupabaseConfig && SupabaseConfig.getClient());
-    if (!client || !this.isOnline) return;
-
-    try {
-      // 1. Kéo danh sách Phiên cân lúa từ Supabase
-      const { data: remoteSessions, error } = await client
-        .from('purchasing_sessions')
-        .select('*')
-        .order('created_datetime', { ascending: false })
-        .limit(200);
-
-      if (!error && Array.isArray(remoteSessions) && remoteSessions.length > 0) {
-        if (!AgriData.data) AgriData.data = {};
-        if (!AgriData.data.purchasing_sessions) AgriData.data.purchasing_sessions = [];
-
-        let addedCount = 0;
-        remoteSessions.forEach(rs => {
-          const exists = AgriData.data.purchasing_sessions.some(s => s.id === rs.id);
-          if (!exists) {
-            AgriData.data.purchasing_sessions.push({
-              id: rs.id,
-              stt: rs.stt,
-              ngay_can: (rs.created_datetime || rs.created_at || '').replace('T', ' ').substring(0, 19),
-              ho_sx: rs.farmer_name,
-              dia_chi: rs.farmer_address || '',
-              dien_thoai: rs.farmer_phone || '',
-              xu_dong: rs.xu_dong,
-              can_bo_can: rs.can_bo_can || 'Cán bộ cân',
-              xe_nhan: rs.xe_nhan || 'Xe nhận',
-              loai_giong: rs.loai_giong || 'J02',
-              chi_tiet_can: Array.isArray(rs.batches_json) ? rs.batches_json : [],
-              tong_so_bao: Number(rs.tong_so_bao || 0),
-              luong_tuoi_kg: Number(rs.luong_tuoi_kg || 0),
-              ty_le_tru_pct: rs.tru_do_am_pct != null ? Number(rs.tru_do_am_pct) : 12,
-              luong_kho_kg: Number(rs.luong_kho_kg || 0),
-              don_gia_kg: Number(rs.don_gia_kg || 8500),
-              thanh_tien: Number(rs.thanh_tien || 0),
-              ghi_chu: rs.note || ''
-            });
-            addedCount++;
-          }
-        });
-
-        if (addedCount > 0) {
-          AgriData.saveCustomRawData();
-          if (window.AgriPurchasing) AgriPurchasing.filterSessions();
-          if (window.AgriAnalytics) AgriAnalytics.renderKPIs();
-          console.log(`✅ [AgriSync] Đã nạp thành công ${addedCount} phiên cân từ Supabase Cloud!`);
-        }
-      }
-    } catch (err) {
-      console.warn('⚠️ [AgriSync] pullCloudData warning:', err);
-    }
-  },
-
-  // ---------------------------------------------------------------------------
-  // 4. PHÁT SỰ KIỆN TỨC THÌ (BROADCAST & PUSH TO SUPABASE)
+  // 5. PHÁT SỰ KIỆN VÀ ĐẨY LÊN SUPABASE (BROADCAST & PUSH)
   // ---------------------------------------------------------------------------
   broadcastEvent(eventType, payload) {
     const eventPacket = {
@@ -268,7 +321,7 @@ const AgriSync = {
       try { this.broadcastChannel.postMessage(eventPacket); } catch (e) {}
     }
 
-    // 2. Broadcast qua Supabase WebSocket tới các máy/thiết bị khác
+    // 2. Broadcast tức thì qua Supabase WebSocket tới các thiết bị khác
     if (this.supabaseChannel && this.isSupabaseSubscribed) {
       try {
         this.supabaseChannel.send({
@@ -277,43 +330,74 @@ const AgriSync = {
           payload: eventPacket
         });
       } catch (e) {
-        console.warn('⚠️ Broadcast send warning:', e);
+        this.broadcastQueue.push(eventPacket);
       }
+    } else {
+      this.broadcastQueue.push(eventPacket);
     }
 
-    // 3. Đẩy dữ liệu vào hàng đợi đồng bộ và ghi vào Supabase Database
+    // 3. Đưa vào hàng đợi để ghi trực tiếp vào Supabase Postgres
     this.enqueueSync(eventPacket);
+  },
+
+  flushBroadcastQueue() {
+    if (!this.supabaseChannel || !this.isSupabaseSubscribed) return;
+    while (this.broadcastQueue.length > 0) {
+      const pkt = this.broadcastQueue.shift();
+      try {
+        this.supabaseChannel.send({
+          type: 'broadcast',
+          event: 'agrigis_sync_packet',
+          payload: pkt
+        });
+      } catch (e) {}
+    }
   },
 
   handleIncomingBroadcast(packet, isLocalBroadcast = true) {
     if (!packet || !packet.type) return;
-    console.log('📡 [AgriSync] Xử lý sự kiện đồng bộ:', packet.type, packet);
 
     if (packet.type === 'PURCHASING_SESSION_SAVED') {
+      const s = packet.payload;
+      if (s && s.id && AgriData && AgriData.data) {
+        if (!AgriData.data.purchasing_sessions) AgriData.data.purchasing_sessions = [];
+        const idx = AgriData.data.purchasing_sessions.findIndex(item => item.id === s.id);
+        if (idx >= 0) {
+          AgriData.data.purchasing_sessions[idx] = s;
+        } else {
+          AgriData.data.purchasing_sessions.unshift(s);
+        }
+        AgriData.saveCustomRawData();
+      }
+
       if (window.AgriPurchasing) {
         AgriPurchasing.filterSessions();
         AgriPurchasing.populateFilterDropdowns();
       }
       if (window.AgriAnalytics) AgriAnalytics.renderKPIs();
+
       if (!isLocalBroadcast) {
-        this.showLiveToast(`⚖️ [Realtime] Phiên cân mới vừa được lưu bởi ${packet.sender}!`);
+        this.showLiveToast(`🌾 [Realtime] Phiên cân mới của hộ "${s.ho_sx || 'Nông dân'}" vừa được đồng bộ tức thì!`);
       }
+    } else if (packet.type === 'PURCHASING_SESSION_DELETED') {
+      const id = packet.payload?.id;
+      if (id && AgriData && AgriData.data && AgriData.data.purchasing_sessions) {
+        AgriData.data.purchasing_sessions = AgriData.data.purchasing_sessions.filter(item => item.id !== id);
+        AgriData.saveCustomRawData();
+      }
+      if (window.AgriPurchasing) AgriPurchasing.filterSessions();
+      if (window.AgriAnalytics) AgriAnalytics.renderKPIs();
     } else if (packet.type === 'PLOT_UPDATED') {
       if (window.AgriPlots && window.App.currentTab === 'tab-plots') AgriPlots.renderTable();
       if (window.AgriMap && window.App.currentTab === 'tab-map') AgriMap.loadGeoJSON();
-      if (!isLocalBroadcast) {
-        this.showLiveToast(`📋 [Realtime] Sổ thửa ruộng vừa được cập nhật bởi ${packet.sender}!`);
-      }
     } else if (packet.type === 'PAYMENT_UPDATED') {
       if (window.AgriServices && window.App.currentTab === 'tab-services') AgriServices.render();
       if (window.AgriAnalytics) AgriAnalytics.renderKPIs();
-    } else if (packet.type === 'AUDIT_LOG') {
-      if (window.AgriAdmin && AgriAdmin.isOpen) AgriAdmin.renderLogsTable();
     }
   },
 
   // ---------------------------------------------------------------------------
-  // 5. HÀNG ĐỢI ĐỒNG BỘ NGOẠI TUYẾN (OFFLINE-FIRST SYNC QUEUE)
+  // 6. HÀNG ĐỢI ĐỒNG BỘ NGOẠI TUYẾN (OFFLINE-FIRST SYNC QUEUE)
   // ---------------------------------------------------------------------------
   enqueueSync(packet) {
     this.syncQueue.push(packet);
@@ -367,13 +451,13 @@ const AgriSync = {
           });
 
           if (error) {
-            console.warn('⚠️ [AgriSync] Lỗi khi đẩy phiên cân lên Supabase:', error.message);
-            // Nếu lỗi mạng tạm thời, giữ lại hàng đợi
-            if (error.code === 'PGRST301' || error.message.includes('fetch')) {
+            console.warn('⚠️ [AgriSync] Lỗi đẩy phiên cân lên Supabase:', error.message);
+            // Nếu lỗi do mạng tạm thời, giữ lại hàng đợi
+            if (error.code === 'PGRST301' || error.message.includes('fetch') || error.message.includes('Failed to fetch')) {
               remainingItems.push(item);
             }
           } else {
-            console.log('✅ [AgriSync] Đã đẩy phiên cân lên Supabase Cloud thành công:', s.id);
+            console.log('✅ [AgriSync] Đã đẩy phiên cân lên Supabase Cloud:', s.id);
           }
         }
       } catch (err) {
@@ -394,9 +478,7 @@ const AgriSync = {
         this.broadcastChannel.onmessage = (event) => {
           this.handleIncomingBroadcast(event.data, true);
         };
-      } catch (e) {
-        console.warn('BroadcastChannel not supported');
-      }
+      } catch (e) {}
     }
   },
 
@@ -406,9 +488,9 @@ const AgriSync = {
         this.isOnline = true;
         this.updateStatusBadge('syncing');
         this.setupSupabaseRealtime();
-        this.pullCloudData();
+        this.pullCloudData(false);
         this.processSyncQueue();
-        if (window.AgriAuth) AgriAuth.logActivity('KẾT NỐI MẠNG', 'Đã kết nối lại Internet / 4G. Bắt đầu tự động đồng bộ.');
+        if (window.AgriAuth) AgriAuth.logActivity('KẾT NỐI MẠNG', 'Đã kết nối lại Internet. Tự động đồng bộ thời gian thực.');
       });
 
       window.addEventListener('offline', () => {
@@ -423,11 +505,7 @@ const AgriSync = {
   loadSyncQueue() {
     const saved = localStorage.getItem('agrigis_sync_queue');
     if (saved) {
-      try {
-        this.syncQueue = JSON.parse(saved);
-      } catch (e) {
-        this.syncQueue = [];
-      }
+      try { this.syncQueue = JSON.parse(saved); } catch (e) { this.syncQueue = []; }
     } else {
       this.syncQueue = [];
     }
@@ -439,7 +517,7 @@ const AgriSync = {
   },
 
   // ---------------------------------------------------------------------------
-  // 6. HUY HIỆU TRẠNG THÁI REALTIME TRÊN HEADER
+  // 7. HUY HIỆU TRẠNG THÁI REALTIME TRÊN HEADER
   // ---------------------------------------------------------------------------
   updateStatusBadge(overrideState) {
     const badge = document.getElementById('sync-status-badge');
@@ -453,8 +531,8 @@ const AgriSync = {
     if (state === 'online') {
       dot.style.background = '#10b981';
       dot.className = 'status-dot pulse-emerald';
-      label.textContent = this.isSupabaseSubscribed ? 'Realtime Live' : 'Trực tuyến';
-      badge.title = 'Hệ thống đang kết nối máy chủ Supabase và đồng bộ Realtime WebSocket 100%';
+      label.textContent = this.isSupabaseSubscribed ? 'Realtime Live' : 'Đồng bộ Cloud';
+      badge.title = 'Hệ thống đang kết nối CSDL Supabase và đồng bộ Realtime hai chiều 100%';
     } else if (state === 'syncing') {
       dot.style.background = '#f59e0b';
       dot.className = 'status-dot spin';
@@ -464,7 +542,7 @@ const AgriSync = {
       dot.style.background = '#ef4444';
       dot.className = 'status-dot';
       label.textContent = 'Ngoại tuyến (Offline)';
-      badge.title = 'Đang mất mạng: Dữ liệu đang được lưu an toàn trên máy của bạn và sẽ tự động đẩy lên Supabase khi có mạng lại.';
+      badge.title = 'Đang mất mạng: Dữ liệu đang được lưu an toàn trên máy và sẽ tự động đẩy lên Supabase khi có mạng lại.';
     }
   },
 
@@ -483,11 +561,12 @@ const AgriSync = {
 
     setTimeout(() => {
       toast.classList.remove('show');
-    }, 4000);
+    }, 4500);
   }
 };
 
 if (typeof window !== 'undefined') {
   window.AgriSync = AgriSync;
 }
+
 
