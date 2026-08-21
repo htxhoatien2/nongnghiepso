@@ -451,29 +451,91 @@ body:not(.dark-mode) .light-icon { display: none; }
   gap: 8px;
 }
 
-/* Map Control Dock at Bottom */
+/* Map Control Dock at Bottom (Collapsible Sheet) */
 .map-control-dock {
   position: absolute;
-  bottom: 16px;
+  bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 500;
   width: calc(100% - 32px);
   max-width: 620px;
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(16px);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.22), 0 2px 8px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 body.dark-mode .map-control-dock {
-  background: rgba(17, 24, 39, 0.94);
+  background: rgba(17, 24, 39, 0.95);
   border-color: #374151;
+}
+
+/* Dock Handle Bar */
+.dock-handle-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 12px 3px;
+  cursor: pointer;
+  background: var(--bg-app);
+  border-bottom: 1px solid var(--border-color);
+  user-select: none;
+  transition: background-color 0.2s ease;
+}
+
+.dock-handle-bar:hover {
+  background: var(--bg-surface);
+}
+
+.dock-handle-pill {
+  width: 32px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--text-muted);
+  opacity: 0.45;
+  margin-bottom: 2px;
+}
+
+.dock-handle-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dock-handle-label i {
+  width: 13px;
+  height: 13px;
+}
+
+/* Collapsed State for Dock */
+.map-control-dock.collapsed {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+}
+
+.map-control-dock.collapsed .dock-tabs,
+.map-control-dock.collapsed .dock-panel-content {
+  display: none !important;
+}
+
+.map-control-dock.collapsed .dock-handle-bar {
+  padding: 7px 16px;
+  background: var(--bg-surface);
+  border-bottom: none;
+}
+
+.map-control-dock.collapsed .dock-handle-label {
+  color: var(--primary);
+  font-weight: 800;
 }
 
 .dock-tabs {
@@ -486,21 +548,21 @@ body.dark-mode .map-control-dock {
   flex: 1;
   background: transparent;
   border: none;
-  padding: 8px 12px;
-  font-size: 0.78rem;
+  padding: 8px 10px;
+  font-size: 0.76rem;
   font-weight: 700;
   color: var(--text-muted);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 5px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .dock-tab-btn i {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
 }
 
 .dock-tab-btn.active {
@@ -511,7 +573,7 @@ body.dark-mode .map-control-dock {
 
 .dock-panel-content {
   display: none;
-  padding: 10px 14px;
+  padding: 8px 12px;
 }
 
 .dock-panel-content.active {
@@ -520,7 +582,7 @@ body.dark-mode .map-control-dock {
 
 .dock-tools-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(95px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
   gap: 6px;
 }
 
@@ -535,13 +597,13 @@ body.dark-mode .map-control-dock {
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 8px 10px;
+  padding: 7px 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  font-size: 0.76rem;
+  gap: 3px;
+  font-size: 0.72rem;
   font-weight: 700;
   color: var(--text-main);
   cursor: pointer;
@@ -549,8 +611,8 @@ body.dark-mode .map-control-dock {
 }
 
 .dock-action-btn i {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   color: var(--primary);
 }
 
@@ -577,14 +639,14 @@ body.dark-mode .map-control-dock {
 .basemap-options {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: 6px;
 }
 
 .basemap-card {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.78rem;
+  gap: 5px;
+  font-size: 0.76rem;
   font-weight: 600;
   cursor: pointer;
   padding: 6px 8px;
@@ -596,40 +658,88 @@ body.dark-mode .map-control-dock {
 .dock-io-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+/* Map Floating Action Column (Góc phải bản đồ) */
+.map-floating-action-column {
+  position: absolute;
+  top: 110px;
+  right: 12px;
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
 }
 
-/* Map Legend */
+.map-fab-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+body.dark-mode .map-fab-btn {
+  background: rgba(17, 24, 39, 0.95);
+  color: #ffffff;
+}
+
+.map-fab-btn:hover {
+  transform: scale(1.08);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.map-fab-btn:active {
+  transform: scale(0.94);
+}
+
+.map-fab-btn i {
+  width: 18px;
+  height: 18px;
+}
+
+/* Map Legend Badge (Góc trên bên trái) */
 .map-legend {
   position: absolute;
   left: 12px;
-  bottom: 20px;
-  z-index: 500;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(8px);
-  padding: 6px 12px;
-  border-radius: var(--radius-md);
+  top: 110px;
+  z-index: 490;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  padding: 5px 10px;
+  border-radius: 20px;
   border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   display: flex;
-  gap: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
 }
 
 body.dark-mode .map-legend {
-  background: rgba(17, 24, 39, 0.9);
+  background: rgba(17, 24, 39, 0.92);
 }
 
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
 }
 
 .legend-color {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 3px;
 }
 
@@ -2919,16 +3029,108 @@ body.dark-mode .config-title {
 }
 
 @media (max-width: 768px) {
+  /* Map Control Dock on Mobile: Above Bottom Nav, Expandable/Collapsible */
+  .map-control-dock {
+    bottom: 72px !important;
+    left: 8px !important;
+    right: 8px !important;
+    transform: none !important;
+    width: auto !important;
+    max-width: none !important;
+    border-radius: 16px !important;
+    z-index: 550 !important;
+  }
+
+  .map-control-dock .dock-tab-btn {
+    padding: 7px 4px !important;
+    font-size: 0.72rem !important;
+    gap: 4px !important;
+  }
+
+  .map-control-dock .dock-tools-grid {
+    grid-template-columns: repeat(auto-fit, minmax(68px, 1fr)) !important;
+    gap: 4px !important;
+  }
+
+  .map-control-dock .dock-action-btn {
+    padding: 6px 4px !important;
+    font-size: 0.68rem !important;
+  }
+
+  .map-control-dock .dock-action-btn i {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  /* Map Search & Chips Horizontal Scroll on Mobile */
+  .map-floating-controls {
+    top: 10px !important;
+    left: 8px !important;
+    right: 8px !important;
+    max-width: none !important;
+  }
+
+  .map-chip-filters {
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    padding-bottom: 2px !important;
+  }
+
+  .map-chip-filters::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .map-chip-filters .chip {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    font-size: 0.72rem !important;
+    padding: 4px 10px !important;
+  }
+
+  /* Map Legend Badge on Mobile: Top Left Pill */
+  .map-legend {
+    top: 102px !important;
+    left: 8px !important;
+    font-size: 0.68rem !important;
+    padding: 4px 8px !important;
+    gap: 6px !important;
+    z-index: 490 !important;
+  }
+
+  /* Quick Floating Actions on Mobile: Top Right */
+  .map-floating-action-column {
+    top: 102px !important;
+    right: 8px !important;
+    z-index: 490 !important;
+  }
+
+  .map-fab-btn {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  .map-fab-btn i {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  /* Floating Weighing Session Bubble on Mobile */
   .floating-bubble-widget {
     bottom: 74px !important;
-    right: 12px !important;
+    right: 10px !important;
     padding: 6px 12px 6px 8px !important;
     z-index: 1000 !important;
     box-shadow: 0 4px 16px rgba(5, 150, 105, 0.45) !important;
   }
-  .floating-quick-menu {
-    bottom: 134px !important;
-    right: 12px !important;
+
+  .floating-bubble-widget .bubble-main-label {
+    font-size: 0.8rem !important;
+  }
+
+  .floating-bubble-widget .bubble-sub-label {
+    font-size: 0.65rem !important;
   }
 }
 

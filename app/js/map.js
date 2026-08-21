@@ -1257,13 +1257,51 @@ const AgriMap = {
   },
 
   // =========================================================================
-  // 8. BIND ALL UI INTERACTION EVENTS
+  // 8. BIND ALL UI INTERACTION EVENTS & DOCK COLLAPSE CONTROLS
   // =========================================================================
 
+  fitAllBounds() {
+    if (this.geoJsonLayer && this.geoJsonLayer.getBounds && this.geoJsonLayer.getBounds().isValid()) {
+      this.map.fitBounds(this.geoJsonLayer.getBounds(), { padding: [30, 30] });
+    }
+  },
+
+  toggleDockCollapse(forceOpen = null) {
+    const dock = document.getElementById('map-control-dock');
+    const chevron = document.getElementById('dock-chevron-icon');
+    const label = document.getElementById('dock-collapse-text');
+    if (!dock) return;
+
+    let shouldCollapse;
+    if (forceOpen !== null) {
+      shouldCollapse = !forceOpen;
+    } else {
+      shouldCollapse = !dock.classList.contains('collapsed');
+    }
+
+    if (shouldCollapse) {
+      dock.classList.add('collapsed');
+      if (label) label.textContent = 'Mở rộng bộ công cụ 🛠️';
+      if (chevron) chevron.setAttribute('data-lucide', 'chevron-up');
+    } else {
+      dock.classList.remove('collapsed');
+      if (label) label.textContent = 'Thu gọn bộ công cụ';
+      if (chevron) chevron.setAttribute('data-lucide', 'chevron-down');
+    }
+
+    if (window.lucide) lucide.createIcons();
+
+    setTimeout(() => {
+      if (this.map) this.map.invalidateSize(true);
+    }, 200);
+  },
+
   bindUIEvents() {
-    // Dock Panel Tab Switcher
+    // Dock Panel Tab Switcher (Auto expand if collapsed)
     document.querySelectorAll('.dock-tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
+        this.toggleDockCollapse(true); // Auto expand
+
         const tab = btn.dataset.panel;
         document.querySelectorAll('.dock-tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.dock-panel-content').forEach(p => p.classList.remove('active'));
@@ -1292,11 +1330,7 @@ const AgriMap = {
     document.getElementById('btn-dock-locate')?.addEventListener('click', () => this.locateUser());
 
     // Fit View
-    document.getElementById('btn-dock-fit')?.addEventListener('click', () => {
-      if (this.geoJsonLayer) {
-        this.map.fitBounds(this.geoJsonLayer.getBounds(), { padding: [20, 20] });
-      }
-    });
+    document.getElementById('btn-dock-fit')?.addEventListener('click', () => this.fitAllBounds());
 
     // Bottom sheet close & edit
     document.getElementById('sheet-close-btn')?.addEventListener('click', () => this.closeBottomSheet());

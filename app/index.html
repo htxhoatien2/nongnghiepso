@@ -58,7 +58,7 @@
   </script>
 
   <!-- Custom CSS with Cache Buster -->
-  <link rel="stylesheet" href="css/style.css?v=2.9.9">
+  <link rel="stylesheet" href="css/style.css?v=3.0.0">
 </head>
 <body class="light-mode">
   <div id="app" class="app-container">
@@ -579,8 +579,34 @@
             </div>
           </div>
 
-          <!-- MAP CONTROL DOCK (BOTTOM CENTER) -->
-          <div class="map-control-dock">
+          <!-- MAP QUICK FLOATING ACTION BUTTONS (GÓC PHẢI BẢN ĐỒ) -->
+          <div class="map-floating-action-column">
+            <button type="button" class="map-fab-btn" id="btn-fab-locate" onclick="AgriMap.locateUser()" title="Định vị GPS của tôi (Vị trí hiện tại)">
+              <i data-lucide="crosshair"></i>
+            </button>
+            <button type="button" class="map-fab-btn" id="btn-fab-fit" onclick="AgriMap.fitAllBounds()" title="Xem toàn cảnh 85 xứ đồng">
+              <i data-lucide="maximize"></i>
+            </button>
+            <button type="button" class="map-fab-btn" id="btn-fab-toggle-dock" onclick="AgriMap.toggleDockCollapse()" title="Bật / Ẩn bộ công cụ bản đồ">
+              <i data-lucide="tool"></i>
+            </button>
+          </div>
+
+          <!-- Map Legend Badge (Góc trên bên trái) -->
+          <div class="map-legend">
+            <div class="legend-item"><span class="legend-color color-large"></span> > 2.0 ha</div>
+            <div class="legend-item"><span class="legend-color color-medium"></span> 1 - 2 ha</div>
+            <div class="legend-item"><span class="legend-color color-small"></span> < 1 ha</div>
+          </div>
+
+          <!-- MAP CONTROL DOCK (BOTTOM CENTER / EXPANDABLE & COLLAPSIBLE SHEET) -->
+          <div class="map-control-dock" id="map-control-dock">
+            <!-- Dock Handle & Quick Drag / Collapse Trigger -->
+            <div class="dock-handle-bar" id="btn-toggle-map-dock" onclick="AgriMap.toggleDockCollapse()" title="Chạm để Thu gọn / Mở rộng Bộ công cụ Bản đồ">
+              <div class="dock-handle-pill"></div>
+              <span class="dock-handle-label"><i data-lucide="chevron-down" id="dock-chevron-icon"></i> <span id="dock-collapse-text">Thu gọn bộ công cụ</span></span>
+            </div>
+
             <!-- Dock Tabs Header -->
             <div class="dock-tabs">
               <button class="dock-tab-btn active" data-panel="tools"><i data-lucide="tool"></i> <span>Biên Tập & Đo Đạc</span></button>
@@ -650,13 +676,6 @@
                 </button>
               </div>
             </div>
-          </div>
-
-          <!-- Map Legend Badge -->
-          <div class="map-legend">
-            <div class="legend-item"><span class="legend-color color-large"></span> > 2.0 ha</div>
-            <div class="legend-item"><span class="legend-color color-medium"></span> 1.0 - 2.0 ha</div>
-            <div class="legend-item"><span class="legend-color color-small"></span> < 1.0 ha</div>
           </div>
 
           <!-- Map Floating Detail Drawer / Popup Sheet -->
@@ -3439,23 +3458,23 @@
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 
   <!-- Embedded Data (Offline & file:// protocol support) -->
-  <script src="data/data_embedded.js?v=2.9.9"></script>
+  <script src="data/data_embedded.js?v=3.0.0"></script>
 
   <!-- Supabase JS SDK (v2) from CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase_config.js?v=2.9.9"></script>
+  <script src="js/supabase_config.js?v=3.0.0"></script>
 
   <!-- App JS Modules with Cache Buster -->
-  <script src="js/data.js?v=2.9.9"></script>
-  <script src="js/auth.js?v=2.9.9"></script>
-  <script src="js/sync.js?v=2.9.9"></script>
-  <script src="js/admin.js?v=2.9.9"></script>
-  <script src="js/map.js?v=2.9.9"></script>
-  <script src="js/records.js?v=2.9.9"></script>
-  <script src="js/farmers.js?v=2.9.9"></script>
-  <script src="js/analytics.js?v=2.9.9"></script>
-  <script src="js/services.js?v=2.9.9"></script>
-  <script src="js/purchasing.js?v=2.9.9"></script>
-  <script src="js/app.js?v=2.9.9"></script>
+  <script src="js/data.js?v=3.0.0"></script>
+  <script src="js/auth.js?v=3.0.0"></script>
+  <script src="js/sync.js?v=3.0.0"></script>
+  <script src="js/admin.js?v=3.0.0"></script>
+  <script src="js/map.js?v=3.0.0"></script>
+  <script src="js/records.js?v=3.0.0"></script>
+  <script src="js/farmers.js?v=3.0.0"></script>
+  <script src="js/analytics.js?v=3.0.0"></script>
+  <script src="js/services.js?v=3.0.0"></script>
+  <script src="js/purchasing.js?v=3.0.0"></script>
+  <script src="js/app.js?v=3.0.0"></script>
 </body>
 </html>
