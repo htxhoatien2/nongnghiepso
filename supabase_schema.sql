@@ -197,13 +197,25 @@ ALTER TABLE public.service_payments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.purchasing_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
 
--- Cho phép đọc công khai hoặc người dùng đã xác thực
-CREATE POLICY "Public Read Plots" ON public.plots FOR SELECT USING (true);
-CREATE POLICY "Public Read Farmers" ON public.farmers FOR SELECT USING (true);
-CREATE POLICY "Public Read Service Items" ON public.service_items FOR SELECT USING (true);
-CREATE POLICY "Public Read Purchasing" ON public.purchasing_sessions FOR SELECT USING (true);
-CREATE POLICY "Authenticated Manage Purchasing" ON public.purchasing_sessions FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Authenticated Manage Plots" ON public.plots FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Authenticated Manage Farmers" ON public.farmers FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Authenticated Manage Payments" ON public.service_payments FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Authenticated Insert Logs" ON public.audit_logs FOR ALL TO authenticated USING (true) WITH CHECK (true);
+-- Cho phép đọc công khai và đồng bộ Realtime hai chiều toàn diện
+DROP POLICY IF EXISTS "Public Read Plots" ON public.plots;
+DROP POLICY IF EXISTS "Authenticated Manage Plots" ON public.plots;
+CREATE POLICY "Allow All Plots Access" ON public.plots FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Public Read Farmers" ON public.farmers;
+DROP POLICY IF EXISTS "Authenticated Manage Farmers" ON public.farmers;
+CREATE POLICY "Allow All Farmers Access" ON public.farmers FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Public Read Service Items" ON public.service_items;
+CREATE POLICY "Allow All Service Items Access" ON public.service_items FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Public Read Purchasing" ON public.purchasing_sessions;
+DROP POLICY IF EXISTS "Authenticated Manage Purchasing" ON public.purchasing_sessions;
+CREATE POLICY "Allow All Purchasing Access" ON public.purchasing_sessions FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Authenticated Manage Payments" ON public.service_payments;
+CREATE POLICY "Allow All Payments Access" ON public.service_payments FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Authenticated Insert Logs" ON public.audit_logs;
+CREATE POLICY "Allow All Logs Access" ON public.audit_logs FOR ALL USING (true) WITH CHECK (true);
+

@@ -795,6 +795,21 @@ Kính đề nghị hộ nông dân kiểm tra đối soát!`;
     AgriData.deletePurchasingSession(sessionId);
     this.populateFilterDropdowns();
     this.filterSessions();
+
+    // Realtime Database Live Sync & Supabase Cloud Deletion
+    const client = window.supabaseClient || (window.SupabaseConfig && SupabaseConfig.getClient());
+    if (client && navigator.onLine) {
+      client.from('purchasing_sessions').delete().eq('id', sessionId).then(({ error }) => {
+        if (error) console.warn('⚠️ [Supabase Delete Session Warning]:', error);
+        else console.log('✅ [Supabase Delete Session Success]:', sessionId);
+      });
+    }
+    if (window.AgriSync) {
+      AgriSync.broadcastEvent('PURCHASING_SESSION_DELETED', { id: sessionId });
+    }
+    if (window.AgriAuth) {
+      AgriAuth.logActivity('XÓA PHIÊN CÂN', `Đã xóa Phiên cân #${s.stt} (${s.ho_sx})`);
+    }
   },
 
   // =========================================================================
