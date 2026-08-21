@@ -58,7 +58,7 @@
   </script>
 
   <!-- Custom CSS with Cache Buster -->
-  <link rel="stylesheet" href="css/style.css?v=3.1.3">
+  <link rel="stylesheet" href="css/style.css?v=3.1.4">
 </head>
 <body class="light-mode">
   <div id="app" class="app-container">
@@ -694,69 +694,56 @@
             </div>
           </div>
 
-          <!-- Map Floating Detail Drawer / Popup Sheet -->
+          <!-- Map Floating Detail Drawer / Popup Sheet (Redesigned Ultra-Compact & Elegant) -->
           <div id="map-bottom-sheet" class="map-sheet">
             <div class="sheet-handle-bar">
               <div class="sheet-handle"></div>
             </div>
             
+            <!-- Header: Tinh Gọn 1 Hàng Ngang Hiện Đại -->
             <div class="sheet-header">
-              <div>
-                <div class="sheet-tag"><i data-lucide="map-pin"></i> VÙNG SẢN XUẤT</div>
+              <div class="sheet-header-main">
+                <div class="sheet-badge-row">
+                  <span class="sheet-tag"><i data-lucide="map-pin"></i> XỨ ĐỒNG</span>
+                  <span id="sheet-subtitle" class="sheet-loc-badge">Tổ --</span>
+                </div>
                 <h3 id="sheet-title" class="sheet-title">Xứ Đồng</h3>
-                <p id="sheet-subtitle" class="sheet-subtitle">Địa bàn: --</p>
               </div>
               <div class="sheet-header-actions">
-                <button id="sheet-edit-btn" class="btn btn-emerald btn-sm" title="Chỉnh sửa vùng & danh sách thửa">
+                <button id="sheet-edit-btn" class="btn btn-emerald btn-xs sheet-btn-edit" title="Chỉnh sửa ranh giới & thửa ruộng">
                   <i data-lucide="edit-3"></i> <span>Sửa Vùng</span>
                 </button>
-                <button id="sheet-close-btn" class="close-icon-btn" title="Đóng bảng"><i data-lucide="x"></i></button>
+                <button id="sheet-close-btn" class="close-icon-btn" title="Đóng bảng chi tiết"><i data-lucide="x"></i></button>
               </div>
             </div>
             
-            <!-- Quick Turn-by-Turn Navigation Bar (Google Maps & Coordinates) -->
-            <div class="sheet-nav-bar" style="padding: 0 16px 10px; display: flex; gap: 8px; flex-wrap: wrap;">
-              <button class="btn btn-sm btn-google-nav" onclick="AgriMap.navigateToCurrentZone()" style="background: linear-gradient(135deg, #1a73e8, #0d47a1); color: #fff; border: none; font-weight: 700; border-radius: 8px; padding: 6px 12px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(26,115,232,0.35);">
-                <i data-lucide="navigation"></i> <span>Chỉ Đường Google Maps</span>
+            <!-- Sleek Action Chips Bar (Chỉ đường Maps & Tọa độ trên 1 hàng ngang) -->
+            <div class="sheet-actions-bar">
+              <button class="sheet-action-chip primary" onclick="AgriMap.navigateToCurrentZone()" title="Chỉ đường lái xe Google Maps">
+                <i data-lucide="navigation"></i> <span>Chỉ Đường Maps</span>
               </button>
-              <button class="btn btn-outline btn-sm" onclick="AgriMap.copyCurrentZoneCoords()" style="border-radius: 8px; padding: 6px 10px; display: inline-flex; align-items: center; gap: 5px;" title="Sao chép tọa độ GPS">
-                <i data-lucide="copy"></i> <span>Sao Chép Tọa Độ</span>
+              <button class="sheet-action-chip" onclick="AgriMap.copyCurrentZoneCoords()" title="Sao chép tọa độ GPS tâm vùng">
+                <i data-lucide="copy"></i> <span>Tọa Độ GPS</span>
               </button>
-              <button class="btn btn-outline btn-sm" onclick="AgriMap.openGoogleEarthCurrentZone()" style="border-radius: 8px; padding: 6px 10px; display: inline-flex; align-items: center; gap: 5px;" title="Xem vệ tinh 3D">
-                <i data-lucide="globe"></i> <span>Google Earth</span>
+              <button class="sheet-action-chip" onclick="AgriMap.openGoogleEarthCurrentZone()" title="Xem 3D trên Google Earth">
+                <i data-lucide="globe"></i> <span>Earth 3D</span>
               </button>
             </div>
             
             <div class="sheet-body">
-              <!-- KPI Cards in Sheet -->
-              <div class="sheet-stats-grid">
-                <div class="stat-card stat-area">
-                  <div class="stat-icon-wrap bg-emerald-light"><i data-lucide="maximize-2" class="text-emerald"></i></div>
-                  <div class="stat-content">
-                    <span class="stat-lbl">Tổng diện tích</span>
-                    <span id="sheet-stat-area" class="stat-val text-emerald">0 m²</span>
-                  </div>
+              <!-- Compact Metric Ribbon (3 Cột mini siêu gọn) -->
+              <div class="sheet-compact-kpi-banner">
+                <div class="kpi-mini-pill">
+                  <span class="kpi-pill-lbl">Tổng diện tích</span>
+                  <strong id="sheet-stat-area" class="kpi-pill-val text-emerald">0 m²</strong>
                 </div>
-                <div class="stat-card stat-plots">
-                  <div class="stat-icon-wrap bg-purple-light"><i data-lucide="layers" class="text-purple"></i></div>
-                  <div class="stat-content">
-                    <span class="stat-lbl">Số thửa ruộng</span>
-                    <span id="sheet-stat-plots" class="stat-val">0 thửa</span>
-                  </div>
+                <div class="kpi-mini-pill">
+                  <span class="kpi-pill-lbl">Số thửa</span>
+                  <strong id="sheet-stat-plots" class="kpi-pill-val">0 thửa</strong>
                 </div>
-                <div class="stat-card stat-farmers">
-                  <div class="stat-icon-wrap bg-blue-light"><i data-lucide="users" class="text-blue"></i></div>
-                  <div class="stat-content">
-                    <span class="stat-lbl">Hộ canh tác</span>
-                    <span id="sheet-stat-farmers" class="stat-val text-blue">0 hộ</span>
-                  </div>
-                </div>
-                <div class="stat-card stat-funds">
-                  <div class="stat-icon-wrap bg-amber-light"><i data-lucide="pie-chart" class="text-amber"></i></div>
-                  <div class="stat-content">
-                    <span class="stat-lbl">Quỹ 1 / Quỹ 2</span>
-                    <span id="sheet-stat-funds" class="stat-val" style="font-size: 0.84rem;">0 / 0 m²</span>
-                  </div>
+                <div class="kpi-mini-pill">
+                  <span class="kpi-pill-lbl">Hộ canh tác</span>
+                  <strong id="sheet-stat-farmers" class="kpi-pill-val text-blue">0 hộ</strong>
                 </div>
               </div>
 
@@ -776,17 +763,12 @@
               <div class="sheet-search-wrap">
                 <i data-lucide="search"></i>
                 <input type="text" id="sheet-search-farmer" placeholder="Tìm nhanh hộ sản xuất hoặc số thửa...">
+                <span id="sheet-farmers-count-badge" class="count-badge">0 hộ</span>
               </div>
 
               <!-- List of Farmers & Plots in this Zone -->
-              <div class="sheet-section">
-                <div class="section-title-row">
-                  <h4 class="section-title">Danh Sách Hộ & Chi Tiết Thửa</h4>
-                  <span id="sheet-farmers-count-badge" class="count-badge">0 hộ</span>
-                </div>
-                <div id="sheet-plots-list" class="sheet-plots-list">
-                  <!-- Injected via JS -->
-                </div>
+              <div id="sheet-plots-list" class="sheet-plots-list">
+                <!-- Injected via JS -->
               </div>
             </div>
           </div>
@@ -3557,23 +3539,23 @@
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 
   <!-- Embedded Data (Offline & file:// protocol support) -->
-  <script src="data/data_embedded.js?v=3.1.3"></script>
+  <script src="data/data_embedded.js?v=3.1.4"></script>
 
   <!-- Supabase JS SDK (v2) from CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase_config.js?v=3.1.3"></script>
+  <script src="js/supabase_config.js?v=3.1.4"></script>
 
   <!-- App JS Modules with Cache Buster -->
-  <script src="js/data.js?v=3.1.3"></script>
-  <script src="js/auth.js?v=3.1.3"></script>
-  <script src="js/sync.js?v=3.1.3"></script>
-  <script src="js/admin.js?v=3.1.3"></script>
-  <script src="js/map.js?v=3.1.3"></script>
-  <script src="js/records.js?v=3.1.3"></script>
-  <script src="js/farmers.js?v=3.1.3"></script>
-  <script src="js/analytics.js?v=3.1.3"></script>
-  <script src="js/services.js?v=3.1.3"></script>
-  <script src="js/purchasing.js?v=3.1.3"></script>
-  <script src="js/app.js?v=3.1.3"></script>
+  <script src="js/data.js?v=3.1.4"></script>
+  <script src="js/auth.js?v=3.1.4"></script>
+  <script src="js/sync.js?v=3.1.4"></script>
+  <script src="js/admin.js?v=3.1.4"></script>
+  <script src="js/map.js?v=3.1.4"></script>
+  <script src="js/records.js?v=3.1.4"></script>
+  <script src="js/farmers.js?v=3.1.4"></script>
+  <script src="js/analytics.js?v=3.1.4"></script>
+  <script src="js/services.js?v=3.1.4"></script>
+  <script src="js/purchasing.js?v=3.1.4"></script>
+  <script src="js/app.js?v=3.1.4"></script>
 </body>
 </html>

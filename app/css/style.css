@@ -903,7 +903,7 @@ body.dark-mode .zone-name-tag span {
 }
 
 /* ==========================================================================
-   MAP FLOATING DETAIL DRAWER / POPUP SHEET
+   MAP FLOATING DETAIL DRAWER / POPUP SHEET (COMPACT & MODERN REDESIGN)
    ========================================================================== */
 .map-sheet {
   position: absolute;
@@ -911,15 +911,15 @@ body.dark-mode .zone-name-tag span {
   right: 0;
   bottom: 0;
   background: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(16px);
-  border-top-left-radius: 24px;
-  border-top-right-radius: 24px;
-  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(20px);
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.15);
   border-top: 1px solid var(--border-color);
   z-index: 600;
   transform: translateY(115%);
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
-  max-height: 78vh;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+  max-height: 64vh;
   display: flex;
   flex-direction: column;
 }
@@ -929,23 +929,23 @@ body.dark-mode .zone-name-tag span {
 }
 
 body.dark-mode .map-sheet {
-  background: rgba(17, 24, 39, 0.96);
-  border-color: #374151;
-  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.4);
+  background: rgba(15, 23, 42, 0.97);
+  border-color: #334155;
+  box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.45);
 }
 
-/* On Desktop & iPad: Convert to Elegant Floating Right Side Drawer */
+/* On Desktop: Sleek Floating Card on Top-Right */
 @media (min-width: 768px) {
   .map-sheet {
     left: auto;
     right: 16px;
     top: 16px;
-    bottom: 80px;
-    width: 440px;
-    max-height: calc(100% - 96px);
-    border-radius: 20px;
+    bottom: auto;
+    width: 380px;
+    max-height: calc(100vh - 130px);
+    border-radius: 16px;
     border: 1px solid var(--border-color);
-    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.16);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
     transform: translateX(120%);
   }
 
@@ -959,79 +959,112 @@ body.dark-mode .map-sheet {
 }
 
 .sheet-handle-bar {
-  padding: 8px 0 2px;
+  padding: 6px 0 2px;
   display: flex;
   justify-content: center;
   cursor: grab;
 }
 
 .sheet-handle {
-  width: 40px;
+  width: 36px;
   height: 4px;
   background: var(--border-color);
   border-radius: 10px;
 }
 
+/* Header */
 .sheet-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  padding: 0.75rem 1.25rem;
+  padding: 8px 14px;
   border-bottom: 1px solid var(--border-subtle);
-  gap: 10px;
+  gap: 8px;
+}
+
+.sheet-header-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.sheet-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2px;
 }
 
 .sheet-tag {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 0.68rem;
+  gap: 3px;
+  font-size: 0.64rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--primary);
   background: var(--primary-light);
-  padding: 2px 8px;
-  border-radius: 12px;
-  margin-bottom: 4px;
+  padding: 1px 6px;
+  border-radius: 8px;
 }
 
 .sheet-tag i {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
+}
+
+.sheet-loc-badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-app);
+  border: 1px solid var(--border-subtle);
+  padding: 1px 6px;
+  border-radius: 8px;
 }
 
 .sheet-title {
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   font-weight: 800;
   color: var(--text-main);
   line-height: 1.2;
-}
-
-.sheet-subtitle {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  margin-top: 2px;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sheet-header-actions {
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-shrink: 0;
+}
+
+.sheet-btn-edit {
+  padding: 4px 8px !important;
+  font-size: 0.72rem !important;
+  border-radius: 6px !important;
+  font-weight: 700 !important;
+}
+
+.sheet-btn-edit i {
+  width: 12px;
+  height: 12px;
 }
 
 .close-icon-btn {
   background: var(--bg-app);
   border: 1px solid var(--border-subtle);
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--text-muted);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 
 .close-icon-btn:hover {
@@ -1039,86 +1072,131 @@ body.dark-mode .map-sheet {
   color: var(--text-main);
 }
 
+.close-icon-btn i {
+  width: 14px;
+  height: 14px;
+}
+
+/* Action Chips Bar (1 Hàng Ngang Gọn Gàng) */
+.sheet-actions-bar {
+  padding: 6px 14px 4px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.sheet-action-chip {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 5px 8px;
+  border-radius: 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border: 1px solid var(--border-color);
+  background: var(--bg-app);
+  color: var(--text-main);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.sheet-action-chip i {
+  width: 13px;
+  height: 13px;
+}
+
+.sheet-action-chip:hover {
+  background: var(--primary-light);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.sheet-action-chip.primary {
+  background: linear-gradient(135deg, #1a73e8, #0d47a1);
+  color: #ffffff;
+  border-color: #1a73e8;
+  box-shadow: 0 2px 6px rgba(26, 115, 232, 0.3);
+}
+
+.sheet-action-chip.primary i {
+  color: #ffffff;
+}
+
+.sheet-action-chip.primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(26, 115, 232, 0.45);
+}
+
+/* Body Container */
 .sheet-body {
-  padding: 0.85rem 1.25rem 1.25rem;
+  padding: 6px 14px 12px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
-/* KPI Cards Grid in Sheet */
-.sheet-stats-grid {
+/* Compact KPI Banner (3 Cột Mini Tiết Kiệm Không Gian) */
+.sheet-compact-kpi-banner {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-}
-
-.sheet-stats-grid .stat-card {
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 6px;
   background: var(--bg-app);
-  padding: 8px 10px;
-  border-radius: var(--radius-md);
   border: 1px solid var(--border-subtle);
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  border-radius: 10px;
+  padding: 6px 8px;
 }
 
-.stat-icon-wrap {
-  width: 34px;
-  height: 34px;
-  border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.stat-icon-wrap i {
-  width: 18px;
-  height: 18px;
-}
-
-.stat-content {
+.kpi-mini-pill {
   display: flex;
   flex-direction: column;
-  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-right: 1px solid var(--border-subtle);
+  padding: 0 4px;
 }
 
-.sheet-stats-grid .stat-lbl {
-  font-size: 0.68rem;
-  color: var(--text-muted);
+.kpi-mini-pill:last-child {
+  border-right: none;
+}
+
+.kpi-pill-lbl {
+  font-size: 0.62rem;
   font-weight: 600;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.02em;
   white-space: nowrap;
 }
 
-.sheet-stats-grid .stat-val {
-  font-size: 0.95rem;
+.kpi-pill-val {
+  font-size: 0.82rem;
   font-weight: 800;
   line-height: 1.2;
+  margin-top: 1px;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 /* Mini Progress Bar for Land Fund Distribution */
 .sheet-fund-bar-wrap {
   background: var(--bg-app);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  padding: 8px 10px;
+  border-radius: 8px;
+  padding: 5px 8px;
 }
 
 .fund-progress-bar {
-  height: 8px;
+  height: 5px;
   background: var(--border-color);
-  border-radius: 4px;
+  border-radius: 3px;
   display: flex;
   overflow: hidden;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .fund-segment {
@@ -1132,178 +1210,185 @@ body.dark-mode .map-sheet {
 .fund-legend-row {
   display: flex;
   justify-content: space-between;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   color: var(--text-muted);
 }
 
 .dot {
   display: inline-block;
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  margin-right: 4px;
+  margin-right: 3px;
 }
 
 .dot-quy1 { background: #059669; }
 .dot-quy2 { background: #3b82f6; }
 
-/* Search Inside Sheet */
+/* Search Wrap */
 .sheet-search-wrap {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   background: var(--bg-app);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 6px 10px;
+  border-radius: 8px;
+  padding: 4px 8px;
 }
 
 .sheet-search-wrap i {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   color: var(--text-muted);
+  flex-shrink: 0;
 }
 
 .sheet-search-wrap input {
   border: none;
   background: transparent;
   width: 100%;
-  font-size: 0.8rem;
+  font-size: 0.76rem;
   color: var(--text-main);
   outline: none;
 }
 
-/* Section Header */
-.section-title-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.section-title-row .section-title {
-  font-size: 0.86rem;
-  font-weight: 800;
-  color: var(--text-main);
-  margin: 0;
-}
-
 .count-badge {
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: var(--primary);
-  background: var(--primary-light);
-  padding: 2px 8px;
-  border-radius: 10px;
-}
-
-/* Farmer Card List inside Sheet */
-.sheet-plots-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-height: 280px;
-  overflow-y: auto;
-}
-
-.sheet-farmer-card {
-  background: var(--bg-app);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  padding: 10px 12px;
-  transition: all 0.2s ease;
-}
-
-.sheet-farmer-card:hover {
-  border-color: var(--primary);
-  box-shadow: var(--shadow-sm);
-}
-
-.farmer-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px dashed var(--border-color);
-  padding-bottom: 6px;
-  margin-bottom: 6px;
-}
-
-.farmer-name-group {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.farmer-avatar-icon {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: var(--primary-light);
-  color: var(--primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.75rem;
-}
-
-.farmer-title {
-  font-weight: 800;
-  font-size: 0.88rem;
-  color: var(--text-main);
-}
-
-.farmer-plots-badge {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  margin-left: 4px;
-}
-
-.farmer-total-area {
-  font-weight: 800;
-  font-size: 0.88rem;
-  color: var(--primary);
-}
-
-.farmer-plots-table {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.nested-plot-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.76rem;
-  padding: 3px 6px;
-  background: var(--bg-surface);
-  border-radius: 4px;
-  border: 1px solid var(--border-subtle);
-}
-
-.plot-info-left {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.plot-stt-chip {
+  font-size: 0.66rem;
   font-weight: 700;
   color: var(--primary);
   background: var(--primary-light);
   padding: 1px 6px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+/* Farmer Card List inside Sheet (Ultra Compact) */
+.sheet-plots-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.sheet-farmer-card.compact {
+  background: var(--bg-app);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 6px 8px;
+  transition: all 0.15s ease;
+}
+
+.sheet-farmer-card.compact:hover {
+  border-color: var(--primary);
+  background: var(--bg-surface);
+}
+
+.sheet-farmer-card .farmer-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.sheet-farmer-card .farmer-name-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.farmer-icon {
+  font-size: 0.8rem;
+}
+
+.farmer-title {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--text-main);
+  white-space: nowrap;
+}
+
+.farmer-phone-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.68rem;
+  font-weight: 600;
+  margin-left: 4px;
+  background: rgba(2, 132, 199, 0.08);
+  padding: 1px 4px;
   border-radius: 4px;
 }
 
-.plot-fund-type {
-  font-size: 0.7rem;
+.farmer-phone-link i {
+  width: 10px;
+  height: 10px;
+}
+
+.farmer-total-area {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--primary);
+  white-space: nowrap;
+}
+
+/* Horizontal Chips for Plots inside Farmer Card */
+.farmer-chips-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.compact-plot-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  padding: 2px 6px;
+  border-radius: 5px;
+  font-size: 0.68rem;
+  color: var(--text-main);
+}
+
+.compact-plot-chip.owner {
+  border-left: 3px solid #059669;
+}
+
+.compact-plot-chip.rented {
+  border-left: 3px solid #f59e0b;
+  background: rgba(245, 158, 11, 0.05);
+}
+
+.chip-stt {
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.chip-fund {
+  font-weight: 700;
+  color: var(--primary);
+  font-size: 0.64rem;
+}
+
+.compact-plot-chip.rented .chip-fund {
+  color: #d97706;
+}
+
+.chip-area {
+  font-weight: 600;
   color: var(--text-muted);
 }
 
-.plot-area-right {
-  font-weight: 700;
-  color: var(--text-main);
+.chip-owner {
+  font-size: 0.62rem;
+  color: #d97706;
+  font-style: italic;
 }
 
 /* ==========================================================================
