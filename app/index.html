@@ -58,7 +58,7 @@
   </script>
 
   <!-- Custom CSS with Cache Buster -->
-  <link rel="stylesheet" href="css/style.css?v=2.9.7">
+  <link rel="stylesheet" href="css/style.css?v=2.9.8">
 </head>
 <body class="light-mode">
   <div id="app" class="app-container">
@@ -3383,7 +3383,7 @@
       </div>
     </div>
 
-    <!-- MOBILE CURVED BOTTOM NAVIGATION (THIẾT KẾ ĐẦY ĐỦ BẢN ĐỒ, THU MUA, SỔ THỬA & NÚT CÂN LÚA NỔI) -->
+    <!-- MOBILE CURVED BOTTOM NAVIGATION (THỨ TỰ: Trang chủ • Hộ dân • Bản đồ • Thu mua • Sổ thửa) -->
     <nav class="app-mobile-nav" id="app-mobile-nav">
       <!-- 1. Trang Chủ -->
       <button type="button" class="mob-nav-btn active" data-tab="tab-home" onclick="App.switchTab('tab-home')">
@@ -3391,108 +3391,42 @@
         <span class="mob-label">Trang chủ</span>
       </button>
 
-      <!-- 2. Phân Hệ Bản Đồ Không Gian GIS -->
-      <button type="button" class="mob-nav-btn" data-tab="tab-map" onclick="App.switchTab('tab-map')">
-        <div class="mob-icon-wrap"><i data-lucide="map"></i></div>
-        <span class="mob-label">Bản đồ</span>
+      <!-- 2. Hộ Dân -->
+      <button type="button" class="mob-nav-btn" data-tab="tab-farmers" onclick="App.switchTab('tab-farmers')">
+        <div class="mob-icon-wrap"><i data-lucide="users"></i></div>
+        <span class="mob-label">Hộ dân</span>
       </button>
 
-      <!-- 3. NÚT TRÒN NỔI Ở GIỮA: CÂN LÚA NGOÀI RUỘNG -->
+      <!-- 3. NÚT TRÒN NỔI Ở GIỮA: BẢN ĐỒ GIS -->
       <div class="mob-center-action-slot">
-        <button type="button" class="mob-center-btn" onclick="AgriPurchasing.openNewSessionModal()" title="Mở nhanh phiên cân thu mua lúa tại ruộng">
-          <i data-lucide="scale"></i>
+        <button type="button" class="mob-center-btn" data-tab="tab-map" onclick="App.switchTab('tab-map')" title="Mở bản đồ không gian GIS">
+          <i data-lucide="map"></i>
         </button>
-        <span class="mob-center-label">Cân Lúa</span>
+        <span class="mob-center-label">Bản đồ</span>
       </div>
 
-      <!-- 4. Phân Hệ Thu Mua Lúa -->
+      <!-- 4. Thu Mua -->
       <button type="button" class="mob-nav-btn" data-tab="tab-purchasing" onclick="App.switchTab('tab-purchasing')">
         <div class="mob-icon-wrap"><i data-lucide="truck"></i></div>
         <span class="mob-label">Thu mua</span>
       </button>
 
-      <!-- 5. Sổ Bộ Thửa Ruộng -->
+      <!-- 5. Sổ Thửa -->
       <button type="button" class="mob-nav-btn" data-tab="tab-plots" onclick="App.switchTab('tab-plots')">
         <div class="mob-icon-wrap"><i data-lucide="table-2"></i></div>
         <span class="mob-label">Sổ thửa</span>
       </button>
     </nav>
 
-    <!-- FLOATING ACTION SPEED-DIAL / CHATBOT WIDGET (HIỂN THỊ CẢ DESKTOP & MOBILE) -->
-    <div id="floating-weighing-bubble" class="floating-bubble-widget" onclick="App.toggleFloatingQuickMenu(event)" title="Menu Tiện Ích Nhanh & Trợ Lý Nông Nghiệp">
+    <!-- FLOATING ACTION BUBBLE: MỞ PHIÊN CÂN LÚA (HIỂN THỊ CẢ THIẾT BỊ DI ĐỘNG VÀ WEBAPP) -->
+    <div id="floating-weighing-bubble" class="floating-bubble-widget" onclick="AgriPurchasing.openNewSessionModal()" title="Mở nhanh Phiên Cân Lúa (Bấm để cân tại ruộng)">
       <div class="bubble-pulse"></div>
       <div class="bubble-icon-wrap">
-        <i data-lucide="sparkles"></i>
+        <i data-lucide="scale"></i>
       </div>
       <div class="bubble-label-wrap">
-        <span class="bubble-main-label">Tiện Ích Nhanh</span>
-        <span class="bubble-sub-label">Cân Lúa • Bản Đồ ⚡</span>
-      </div>
-    </div>
-
-    <!-- QUICK SPEED DIAL POPOVER MENU -->
-    <div id="floating-quick-menu" class="floating-quick-menu" style="display: none;">
-      <div class="floating-quick-menu-header">
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <div style="width: 28px; height: 28px; border-radius: 6px; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center;">
-            <i data-lucide="sparkles" style="width: 16px; height: 16px;"></i>
-          </div>
-          <div>
-            <strong style="font-size: 0.88rem; color: var(--text-main); display: block;">Tiện Ích & Trợ Lý Nông Nghiệp</strong>
-            <span style="font-size: 0.72rem; color: var(--text-muted);">HTX Hòa Tiến 2</span>
-          </div>
-        </div>
-        <button type="button" onclick="App.closeFloatingQuickMenu()" style="width: 26px; height: 26px; border: none; background: transparent; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center; border-radius: 4px;">
-          <i data-lucide="x" style="width: 18px; height: 18px;"></i>
-        </button>
-      </div>
-
-      <div class="floating-quick-menu-grid">
-        <!-- 1. Mở phiên cân lúa -->
-        <button type="button" class="floating-menu-item item-emerald" onclick="App.closeFloatingQuickMenu(); AgriPurchasing.openNewSessionModal();">
-          <div class="menu-item-icon"><i data-lucide="scale"></i></div>
-          <div class="menu-item-info">
-            <strong>Phiên Cân Lúa Tại Ruộng</strong>
-            <span>Cân bao, trừ bì, tính tiền tự động</span>
-          </div>
-          <span class="menu-item-badge">⚡ Cân ngay</span>
-        </button>
-
-        <!-- 2. Mở Bản đồ GIS -->
-        <button type="button" class="floating-menu-item item-blue" onclick="App.closeFloatingQuickMenu(); App.switchTab('tab-map');">
-          <div class="menu-item-icon"><i data-lucide="map"></i></div>
-          <div class="menu-item-info">
-            <strong>Bản Đồ Không Gian GIS</strong>
-            <span>Xem 85 xứ đồng, đo đạc & định vị GPS</span>
-          </div>
-        </button>
-
-        <!-- 3. Mở Phân hệ Thu Mua Lúa -->
-        <button type="button" class="floating-menu-item item-amber" onclick="App.closeFloatingQuickMenu(); App.switchTab('tab-purchasing');">
-          <div class="menu-item-icon"><i data-lucide="truck"></i></div>
-          <div class="menu-item-info">
-            <strong>Sổ Thu Mua & Nhập Lúa</strong>
-            <span>Sản lượng, biểu giá & thanh toán</span>
-          </div>
-        </button>
-
-        <!-- 4. Sổ Bộ Thửa Ruộng -->
-        <button type="button" class="floating-menu-item" onclick="App.closeFloatingQuickMenu(); App.switchTab('tab-plots');">
-          <div class="menu-item-icon"><i data-lucide="table-2"></i></div>
-          <div class="menu-item-info">
-            <strong>Sổ Bộ Thửa & Đất Đai</strong>
-            <span>Tra cứu Quỹ 1, Quỹ 2 & Tích tụ</span>
-          </div>
-        </button>
-
-        <!-- 5. Hộ Nông Dân -->
-        <button type="button" class="floating-menu-item" onclick="App.closeFloatingQuickMenu(); App.switchTab('tab-farmers');">
-          <div class="menu-item-icon"><i data-lucide="users"></i></div>
-          <div class="menu-item-info">
-            <strong>Danh Bạ Hộ Nông Dân</strong>
-            <span>280 hộ canh tác, diện tích & SĐT</span>
-          </div>
-        </button>
+        <span class="bubble-main-label">Phiên Cân</span>
+        <span class="bubble-sub-label">Cân Lúa 🌾</span>
       </div>
     </div>
 
@@ -3505,23 +3439,23 @@
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 
   <!-- Embedded Data (Offline & file:// protocol support) -->
-  <script src="data/data_embedded.js?v=2.9.7"></script>
+  <script src="data/data_embedded.js?v=2.9.8"></script>
 
   <!-- Supabase JS SDK (v2) from CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase_config.js?v=2.9.7"></script>
+  <script src="js/supabase_config.js?v=2.9.8"></script>
 
   <!-- App JS Modules with Cache Buster -->
-  <script src="js/data.js?v=2.9.7"></script>
-  <script src="js/auth.js?v=2.9.7"></script>
-  <script src="js/sync.js?v=2.9.7"></script>
-  <script src="js/admin.js?v=2.9.7"></script>
-  <script src="js/map.js?v=2.9.7"></script>
-  <script src="js/records.js?v=2.9.7"></script>
-  <script src="js/farmers.js?v=2.9.7"></script>
-  <script src="js/analytics.js?v=2.9.7"></script>
-  <script src="js/services.js?v=2.9.7"></script>
-  <script src="js/purchasing.js?v=2.9.7"></script>
-  <script src="js/app.js?v=2.9.7"></script>
+  <script src="js/data.js?v=2.9.8"></script>
+  <script src="js/auth.js?v=2.9.8"></script>
+  <script src="js/sync.js?v=2.9.8"></script>
+  <script src="js/admin.js?v=2.9.8"></script>
+  <script src="js/map.js?v=2.9.8"></script>
+  <script src="js/records.js?v=2.9.8"></script>
+  <script src="js/farmers.js?v=2.9.8"></script>
+  <script src="js/analytics.js?v=2.9.8"></script>
+  <script src="js/services.js?v=2.9.8"></script>
+  <script src="js/purchasing.js?v=2.9.8"></script>
+  <script src="js/app.js?v=2.9.8"></script>
 </body>
 </html>

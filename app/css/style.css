@@ -2693,10 +2693,10 @@ body.dark-mode .config-title {
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #0284c7, #0369a1);
+  background: linear-gradient(135deg, #059669, #047857);
   color: #ffffff;
   border: 4px solid var(--bg-surface);
-  box-shadow: 0 6px 18px rgba(2, 132, 199, 0.45);
+  box-shadow: 0 6px 18px rgba(5, 150, 105, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2708,6 +2708,12 @@ body.dark-mode .config-title {
   box-sizing: border-box;
   pointer-events: auto !important;
   touch-action: manipulation;
+}
+
+.mob-center-btn.active {
+  background: linear-gradient(135deg, #10b981, #059669) !important;
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.65) !important;
+  transform: scale(1.08);
 }
 
 .mob-center-btn:active {
@@ -2724,7 +2730,7 @@ body.dark-mode .config-title {
 .mob-center-label {
   font-size: 0.72rem;
   font-weight: 800;
-  color: #0284c7;
+  color: #059669;
   margin-top: 3px;
   letter-spacing: -0.2px;
   white-space: nowrap;

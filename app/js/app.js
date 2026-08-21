@@ -181,8 +181,8 @@ const App = {
       }
     });
 
-    // Update Mobile Curved Bottom Nav Active State
-    document.querySelectorAll('.app-mobile-nav .mob-nav-btn').forEach(btn => {
+    // Update Mobile Curved Bottom Nav Active State (both regular buttons and center button)
+    document.querySelectorAll('.app-mobile-nav .mob-nav-btn, .app-mobile-nav .mob-center-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.tab === tabId);
     });
 
