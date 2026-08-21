@@ -195,7 +195,18 @@ const AgriData = {
     this.recalculateKPIs();
 
     // 4. Persist
-    localStorage.setItem('agrigis_custom_raw_data', JSON.stringify(this.data));
+    this.saveCustomRawData();
+  },
+
+  // Save raw data to localStorage for offline persistence
+  saveCustomRawData() {
+    if (this.data) {
+      try {
+        localStorage.setItem('agrigis_custom_raw_data', JSON.stringify(this.data));
+      } catch (e) {
+        console.warn('Failed to save to localStorage:', e);
+      }
+    }
   },
 
   // Helper recalculations
