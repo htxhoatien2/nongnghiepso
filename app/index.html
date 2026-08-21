@@ -58,7 +58,7 @@
   </script>
 
   <!-- Custom CSS with Cache Buster -->
-  <link rel="stylesheet" href="css/style.css?v=3.0.1">
+  <link rel="stylesheet" href="css/style.css?v=3.1.0">
 </head>
 <body class="light-mode">
   <div id="app" class="app-container">
@@ -640,20 +640,36 @@
               </div>
             </div>
 
-            <!-- Panel 2: Basemaps -->
+            <!-- Panel 2: Basemaps & Layers -->
             <div id="dock-panel-layers" class="dock-panel-content">
               <div class="basemap-options">
                 <label class="basemap-card">
-                  <input type="radio" name="basemap-radio" value="satellite" checked>
-                  <span>🛰️ Ảnh Vệ Tinh (Esri)</span>
+                  <input type="radio" name="basemap-radio" value="google_hybrid" checked>
+                  <span>🛰️ Vệ Tinh Google (Có Tên Đường)</span>
+                </label>
+                <label class="basemap-card">
+                  <input type="radio" name="basemap-radio" value="google">
+                  <span>🗺️ Giao Thông Google Maps</span>
+                </label>
+                <label class="basemap-card">
+                  <input type="radio" name="basemap-radio" value="hybrid">
+                  <span>🛰️ Vệ Tinh Esri Chi Tiết</span>
                 </label>
                 <label class="basemap-card">
                   <input type="radio" name="basemap-radio" value="osm">
-                  <span>🗺️ Giao Thông (OSM)</span>
+                  <span>🏔️ Địa Hình & Giao Thông OSM</span>
                 </label>
-                <label class="basemap-card">
-                  <input type="radio" name="basemap-radio" value="carto">
-                  <span>🏔️ Địa Hình Sáng (Carto)</span>
+              </div>
+
+              <!-- Layer Visibility Toggles -->
+              <div class="map-layer-toggles" style="margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border-color); display: flex; gap: 8px; flex-wrap: wrap;">
+                <label class="basemap-card" style="flex: 1; min-width: 160px; cursor: pointer;">
+                  <input type="checkbox" id="chk-toggle-landmarks" checked onchange="AgriMap.toggleLandmarksLayer(this.checked)">
+                  <span>📍 Mốc Trọng Yếu (HTX, UBND, Trạm Bơm)</span>
+                </label>
+                <label class="basemap-card" style="flex: 1; min-width: 160px; cursor: pointer;">
+                  <input type="checkbox" id="chk-toggle-zone-labels" checked onchange="AgriMap.toggleZoneLabels(this.checked)">
+                  <span>🏷️ Hiển Thị Tên 85 Xứ Đồng</span>
                 </label>
               </div>
             </div>
@@ -696,6 +712,19 @@
                 </button>
                 <button id="sheet-close-btn" class="close-icon-btn" title="Đóng bảng"><i data-lucide="x"></i></button>
               </div>
+            </div>
+            
+            <!-- Quick Turn-by-Turn Navigation Bar (Google Maps & Coordinates) -->
+            <div class="sheet-nav-bar" style="padding: 0 16px 10px; display: flex; gap: 8px; flex-wrap: wrap;">
+              <button class="btn btn-sm btn-google-nav" onclick="AgriMap.navigateToCurrentZone()" style="background: linear-gradient(135deg, #1a73e8, #0d47a1); color: #fff; border: none; font-weight: 700; border-radius: 8px; padding: 6px 12px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(26,115,232,0.35);">
+                <i data-lucide="navigation"></i> <span>Chỉ Đường Google Maps</span>
+              </button>
+              <button class="btn btn-outline btn-sm" onclick="AgriMap.copyCurrentZoneCoords()" style="border-radius: 8px; padding: 6px 10px; display: inline-flex; align-items: center; gap: 5px;" title="Sao chép tọa độ GPS">
+                <i data-lucide="copy"></i> <span>Sao Chép Tọa Độ</span>
+              </button>
+              <button class="btn btn-outline btn-sm" onclick="AgriMap.openGoogleEarthCurrentZone()" style="border-radius: 8px; padding: 6px 10px; display: inline-flex; align-items: center; gap: 5px;" title="Xem vệ tinh 3D">
+                <i data-lucide="globe"></i> <span>Google Earth</span>
+              </button>
             </div>
             
             <div class="sheet-body">
@@ -3458,23 +3487,23 @@
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 
   <!-- Embedded Data (Offline & file:// protocol support) -->
-  <script src="data/data_embedded.js?v=3.0.1"></script>
+  <script src="data/data_embedded.js?v=3.1.0"></script>
 
   <!-- Supabase JS SDK (v2) from CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase_config.js?v=3.0.1"></script>
+  <script src="js/supabase_config.js?v=3.1.0"></script>
 
   <!-- App JS Modules with Cache Buster -->
-  <script src="js/data.js?v=3.0.1"></script>
-  <script src="js/auth.js?v=3.0.1"></script>
-  <script src="js/sync.js?v=3.0.1"></script>
-  <script src="js/admin.js?v=3.0.1"></script>
-  <script src="js/map.js?v=3.0.1"></script>
-  <script src="js/records.js?v=3.0.1"></script>
-  <script src="js/farmers.js?v=3.0.1"></script>
-  <script src="js/analytics.js?v=3.0.1"></script>
-  <script src="js/services.js?v=3.0.1"></script>
-  <script src="js/purchasing.js?v=3.0.1"></script>
-  <script src="js/app.js?v=3.0.1"></script>
+  <script src="js/data.js?v=3.1.0"></script>
+  <script src="js/auth.js?v=3.1.0"></script>
+  <script src="js/sync.js?v=3.1.0"></script>
+  <script src="js/admin.js?v=3.1.0"></script>
+  <script src="js/map.js?v=3.1.0"></script>
+  <script src="js/records.js?v=3.1.0"></script>
+  <script src="js/farmers.js?v=3.1.0"></script>
+  <script src="js/analytics.js?v=3.1.0"></script>
+  <script src="js/services.js?v=3.1.0"></script>
+  <script src="js/purchasing.js?v=3.1.0"></script>
+  <script src="js/app.js?v=3.1.0"></script>
 </body>
 </html>

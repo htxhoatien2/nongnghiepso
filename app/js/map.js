@@ -9,10 +9,14 @@
 const AgriMap = {
   map: null,
   geoJsonLayer: null,
+  landmarksLayer: null,
+  zoneLabelsLayer: null,
   baseLayers: {},
-  currentBaseLayerName: 'satellite',
+  currentBaseLayerName: 'google_hybrid',
   selectedFeature: null,
   selectedLayer: null,
+  showLandmarks: true,
+  showZoneLabels: true,
   
   // Drawing State
   drawMode: null, // 'polygon' | 'measure_distance' | 'measure_area' | 'edit' | null
@@ -25,11 +29,105 @@ const AgriMap = {
   userMarker: null,
   userAccuracyCircle: null,
 
+  // Danh mục Địa Danh / Mốc Trọng Yếu Xã Hòa Tiến (Landmarks & POIs)
+  landmarks: [
+    {
+      id: 'htx_hoatien2',
+      name: 'Trụ sở HTX Nông Nghiệp Hòa Tiến 2',
+      type: 'office',
+      lat: 15.9682,
+      lng: 108.1975,
+      icon: 'building-2',
+      color: '#059669',
+      desc: 'Trung tâm điều hành sản xuất, tập kết lúa & cung ứng giống J02'
+    },
+    {
+      id: 'ubnd_hoatien',
+      name: 'UBND Xã Hòa Tiến',
+      type: 'gov',
+      lat: 15.9670,
+      lng: 108.2010,
+      icon: 'landmark',
+      color: '#dc2626',
+      desc: 'Trung tâm hành chính xã Hòa Tiến, Huyện Hòa Vang'
+    },
+    {
+      id: 'tram_bom_lachau',
+      name: 'Trạm Bơm Thủy Lợi La Châu',
+      type: 'pump',
+      lat: 15.9635,
+      lng: 108.1920,
+      icon: 'waves',
+      color: '#0284c7',
+      desc: 'Trạm bơm điều tiết nước chính cho 85 xứ đồng sản xuất'
+    },
+    {
+      id: 'cong_baubut',
+      name: 'Cống Thủy Nông Bàu Bút',
+      type: 'gate',
+      lat: 15.9610,
+      lng: 108.1995,
+      icon: 'shield',
+      color: '#0284c7',
+      desc: 'Hệ thống cống điều tiết, ngăn mặn, giữ ngọt & xả lũ'
+    },
+    {
+      id: 'cho_letrach',
+      name: 'Chợ Lệ Trạch',
+      type: 'market',
+      lat: 15.9715,
+      lng: 108.2030,
+      icon: 'shopping-bag',
+      color: '#d97706',
+      desc: 'Khu vực trung tâm thương mại, giao thương nông sản Hòa Tiến'
+    },
+    {
+      id: 'tram_giong_j02',
+      name: 'Khu Cánh Đồng Mẫu Lớn Giống J02',
+      type: 'field',
+      lat: 15.9655,
+      lng: 108.1945,
+      icon: 'sprout',
+      color: '#10b981',
+      desc: 'Vùng sản xuất trọng điểm lúa thuần chất lượng cao J02'
+    },
+    {
+      id: 'dinh_leson',
+      name: 'Đình Làng Lệ Sơn',
+      type: 'culture',
+      lat: 15.9690,
+      lng: 108.1915,
+      icon: 'flag',
+      color: '#7c3aed',
+      desc: 'Di tích văn hóa lịch sử thôn Lệ Sơn - Mốc định hướng Tây'
+    },
+    {
+      id: 'thcs_nguyenphuhuong',
+      name: 'Trường THCS Nguyễn Phú Hường',
+      type: 'school',
+      lat: 15.9660,
+      lng: 108.2050,
+      icon: 'graduation-cap',
+      color: '#2563eb',
+      desc: 'Điểm mốc định hướng giao thông trục Đông xã Hòa Tiến'
+    },
+    {
+      id: 'nga_tu_letrach',
+      name: 'Ngã Tư Lệ Trạch (ĐT605)',
+      type: 'traffic',
+      lat: 15.9730,
+      lng: 108.2045,
+      icon: 'navigation-2',
+      color: '#475569',
+      desc: 'Nút giao thông huyết mạch kết nối vận chuyển nông sản'
+    }
+  ],
+
   init() {
     if (this.map) return;
 
-    // Centered at Hòa Tiến agricultural fields (~15.9650 N, 108.1960 E)
-    const defaultCenter = [15.9650, 108.1960];
+    // Centered at Hòa Tiến agricultural fields (~15.9660 N, 108.1975 E)
+    const defaultCenter = [15.9660, 108.1975];
     const defaultZoom = 15;
 
     // 1. Create Leaflet Map Instance
@@ -43,29 +141,55 @@ const AgriMap = {
     // 2. Add Zoom control to bottom-right
     L.control.zoom({ position: 'bottomright' }).addTo(this.map);
 
-    // 3. Tile Basemap Layers
+    // 3. Tile Basemap Layers with Full Google Hybrid & Road Support
     this.baseLayers = {
-      satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        maxZoom: 19,
-        attribution: 'Esri Satellite'
+      // Google Hybrid: Vệ tinh sắc nét + Đầy đủ tên đường, tên thôn xóm, địa danh Google
+      google_hybrid: L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+        maxZoom: 20,
+        subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+        attribution: 'Google Hybrid'
       }),
+      // Google Maps: Bản đồ đường sá chuẩn Google
+      google: L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+        maxZoom: 20,
+        subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+        attribution: 'Google Maps'
+      }),
+      // Esri Satellite Hybrid (Ảnh vệ tinh Esri + Nhãn địa danh & Giao thông)
+      hybrid: L.layerGroup([
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+          maxZoom: 19,
+          attribution: 'Esri Satellite'
+        }),
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+          maxZoom: 19,
+          opacity: 0.95
+        }),
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}', {
+          maxZoom: 19,
+          opacity: 0.95
+        })
+      ]),
+      // OSM OpenStreetMap
       osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: 'OpenStreetMap'
-      }),
-      carto: L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        maxZoom: 19,
-        attribution: 'Carto Light'
       })
     };
 
-    // Add default satellite basemap
-    this.baseLayers.satellite.addTo(this.map);
+    // Add default Google Hybrid basemap
+    this.baseLayers.google_hybrid.addTo(this.map);
 
     // 4. Render Agricultural Zones GeoJSON
     this.renderGeoJSON();
 
-    // 5. Setup Map Interaction Events
+    // 5. Render Important Landmarks & Permanent Zone Labels
+    this.landmarksLayer = L.layerGroup().addTo(this.map);
+    this.zoneLabelsLayer = L.layerGroup().addTo(this.map);
+    this.renderLandmarks();
+    this.renderZoneLabels();
+
+    // 6. Setup Map Interaction Events
     this.setupMapClickEvents();
     this.bindUIEvents();
 
@@ -80,7 +204,7 @@ const AgriMap = {
       if (this.map) this.map.invalidateSize(true);
     });
 
-    console.log('AgriMap initialized successfully.');
+    console.log('AgriMap initialized successfully with Google Hybrid & Landmarks.');
   },
 
   // =========================================================================
@@ -201,6 +325,170 @@ const AgriMap = {
     if (targetLayer && targetFeature) {
       this.selectZone(targetFeature, targetLayer);
     }
+  },
+
+  // =========================================================================
+  // 1.5. LANDMARKS & PERMANENT LABELS & GOOGLE MAPS NAVIGATION
+  // =========================================================================
+
+  renderLandmarks() {
+    if (!this.landmarksLayer) return;
+    this.landmarksLayer.clearLayers();
+
+    if (!this.showLandmarks) return;
+
+    this.landmarks.forEach(lm => {
+      const iconHtml = `
+        <div class="custom-landmark-pin" style="--pin-color: ${lm.color};">
+          <div class="pin-pulse"></div>
+          <div class="pin-badge">
+            <i data-lucide="${lm.icon || 'map-pin'}"></i>
+          </div>
+          <span class="pin-label">${lm.name}</span>
+        </div>
+      `;
+
+      const customIcon = L.divIcon({
+        className: 'landmark-div-icon',
+        html: iconHtml,
+        iconSize: [140, 48],
+        iconAnchor: [70, 36],
+        popupAnchor: [0, -36]
+      });
+
+      const marker = L.marker([lm.lat, lm.lng], { icon: customIcon });
+
+      const popupContent = `
+        <div style="font-family: inherit; min-width: 230px; padding: 4px;">
+          <div style="font-size: 11px; font-weight: 700; color: ${lm.color}; text-transform: uppercase; margin-bottom: 2px;">
+            📍 MỐC ĐỊNH VỊ XÃ HÒA TIẾN
+          </div>
+          <div style="font-size: 14px; font-weight: 800; color: #1e293b; line-height: 1.3; margin-bottom: 4px;">
+            ${lm.name}
+          </div>
+          <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">
+            ${lm.desc}
+          </div>
+          <div style="font-size: 11px; font-family: monospace; color: #475569; background: #f1f5f9; padding: 4px 6px; border-radius: 4px; margin-bottom: 8px;">
+            Tọa độ: ${lm.lat.toFixed(5)}, ${lm.lng.toFixed(5)}
+          </div>
+          <button onclick="AgriMap.openGoogleMapsDirections(${lm.lat}, ${lm.lng}, '${lm.name.replace(/'/g, "\\'")}')" 
+                  style="width: 100%; background: linear-gradient(135deg, #1a73e8, #0d47a1); color: #fff; border: none; padding: 8px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 2px 6px rgba(26,115,232,0.4);">
+            <i data-lucide="navigation" style="width: 14px; height: 14px;"></i> <span>Chỉ Đường Google Maps</span>
+          </button>
+        </div>
+      `;
+
+      marker.bindPopup(popupContent, { maxWidth: 300 });
+      this.landmarksLayer.addLayer(marker);
+    });
+
+    if (window.lucide) lucide.createIcons();
+  },
+
+  toggleLandmarksLayer(show) {
+    this.showLandmarks = show;
+    this.renderLandmarks();
+  },
+
+  renderZoneLabels() {
+    if (!this.zoneLabelsLayer) return;
+    this.zoneLabelsLayer.clearLayers();
+
+    if (!this.showZoneLabels) return;
+
+    const geoData = AgriData.getGeoJSON();
+    if (!geoData || !geoData.features) return;
+
+    geoData.features.forEach(f => {
+      const name = f.properties.name;
+      if (!name) return;
+
+      // Calculate centroid
+      let lat = 0, lng = 0, count = 0;
+      const coords = f.geometry.type === 'MultiPolygon' ? f.geometry.coordinates[0][0] : f.geometry.coordinates[0];
+      if (Array.isArray(coords)) {
+        coords.forEach(c => {
+          lng += c[0];
+          lat += c[1];
+          count++;
+        });
+      }
+      if (count > 0) {
+        lat /= count;
+        lng /= count;
+
+        const labelIcon = L.divIcon({
+          className: 'zone-name-tag',
+          html: `<span>${name}</span>`,
+          iconSize: [90, 22],
+          iconAnchor: [45, 11]
+        });
+
+        const labelMarker = L.marker([lat, lng], {
+          icon: labelIcon,
+          interactive: false
+        });
+
+        this.zoneLabelsLayer.addLayer(labelMarker);
+      }
+    });
+  },
+
+  toggleZoneLabels(show) {
+    this.showZoneLabels = show;
+    this.renderZoneLabels();
+  },
+
+  openGoogleMapsDirections(lat, lng, name = '') {
+    if (!lat || !lng) return;
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
+    window.open(url, '_blank');
+  },
+
+  navigateToCurrentZone() {
+    if (!this.selectedLayer && !this.selectedFeature) {
+      alert('Vui lòng chạm chọn một Xứ đồng hoặc Thửa ruộng trên bản đồ để chỉ đường.');
+      return;
+    }
+    const center = this.selectedLayer ? this.selectedLayer.getBounds().getCenter() : null;
+    if (center) {
+      const name = this.selectedFeature?.properties?.name || 'Vùng sản xuất Hòa Tiến';
+      this.openGoogleMapsDirections(center.lat, center.lng, name);
+    }
+  },
+
+  copyCurrentZoneCoords() {
+    if (!this.selectedLayer) {
+      alert('Vui lòng chọn một Xứ đồng để lấy tọa độ.');
+      return;
+    }
+    const center = this.selectedLayer.getBounds().getCenter();
+    const coordText = `${center.lat.toFixed(6)}, ${center.lng.toFixed(6)}`;
+    
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(coordText);
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = coordText;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+
+    if (window.AgriSync && AgriSync.showLiveToast) {
+      AgriSync.showLiveToast(`📋 Đã sao chép tọa độ GPS tâm vùng: ${coordText}`);
+    } else {
+      alert(`Đã sao chép tọa độ GPS: ${coordText}`);
+    }
+  },
+
+  openGoogleEarthCurrentZone() {
+    if (!this.selectedLayer) return;
+    const center = this.selectedLayer.getBounds().getCenter();
+    const url = `https://earth.google.com/web/@${center.lat},${center.lng},20a,500d,35y,0h,0t,0r`;
+    window.open(url, '_blank');
   },
 
   // =========================================================================

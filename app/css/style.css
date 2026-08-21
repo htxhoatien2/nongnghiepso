@@ -748,6 +748,123 @@ body.dark-mode .map-legend {
 .color-small { background: #f59e0b; }
 
 /* ==========================================================================
+   LANDMARK PINS & PERMANENT ZONE TAGS (POI ENGINE)
+   ========================================================================== */
+.custom-landmark-pin {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: auto;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+}
+
+.pin-pulse {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--pin-color, #059669);
+  opacity: 0.35;
+  animation: landmarkPulse 2s infinite ease-out;
+}
+
+@keyframes landmarkPulse {
+  0% { transform: translate(-50%, -50%) scale(0.6); opacity: 0.8; }
+  100% { transform: translate(-50%, -50%) scale(2.2); opacity: 0; }
+}
+
+.pin-badge {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--pin-color, #059669);
+  color: #ffffff;
+  border: 2px solid #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  transition: transform 0.2s ease;
+}
+
+.custom-landmark-pin:hover .pin-badge {
+  transform: scale(1.15);
+}
+
+.pin-badge i {
+  width: 15px;
+  height: 15px;
+}
+
+.pin-label {
+  margin-top: 3px;
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(6px);
+  color: #ffffff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  white-space: nowrap;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  z-index: 1;
+}
+
+/* Zone Centroid Permanent Name Tag */
+.zone-name-tag {
+  background: transparent;
+  border: none;
+}
+
+.zone-name-tag span {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(4px);
+  color: #0f172a;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+body.dark-mode .zone-name-tag span {
+  background: rgba(15, 23, 42, 0.88);
+  color: #f8fafc;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Google Navigation Button in Sheet */
+.btn-google-nav {
+  transition: all 0.2s ease;
+}
+
+.btn-google-nav:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(26, 115, 232, 0.45) !important;
+}
+
+.btn-google-nav:active {
+  transform: scale(0.97);
+}
+
+/* ==========================================================================
    MAP FLOATING DETAIL DRAWER / POPUP SHEET
    ========================================================================== */
 .map-sheet {
