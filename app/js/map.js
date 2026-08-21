@@ -1013,6 +1013,183 @@ const AgriMap = {
     );
   },
 
+  // =========================================================================
+  // 3.6. SMART BATCH COORDINATE PASTE & PARSER (GOOGLE MAPS / GPS / EXCEL)
+  // =========================================================================
+
+  openPasteCoordsModal() {
+    const modal = document.getElementById('modal-paste-coords');
+    const textarea = document.getElementById('paste-coords-textarea');
+    const msg = document.getElementById('paste-coords-preview-msg');
+    if (!modal) return;
+
+    if (textarea) textarea.value = '';
+    if (msg) msg.textContent = '';
+
+    modal.classList.add('open');
+    if (textarea) setTimeout(() => textarea.focus(), 150);
+    if (window.lucide) lucide.createIcons();
+  },
+
+  closePasteCoordsModal() {
+    const modal = document.getElementById('modal-paste-coords');
+    if (modal) modal.classList.remove('open');
+  },
+
+  parseCoordinatesFromText(rawText) {
+    if (!rawText || typeof rawText !== 'string') return [];
+
+    const text = rawText.trim();
+    const resultPoints = [];
+
+    // Pattern 1: Tìm các cặp số thập phân cách nhau bởi dấu phẩy, khoảng trắng hoặc tab
+    // Ví dụ: 15.9602, 108.205668 hoặc 15.9602 108.205668
+    const regexPair = /([+-]?\d+(?:\.\d+)?)[,\s\t]+([+-]?\d+(?:\.\d+)?)/g;
+    let match;
+
+    const matchedNumbers = [];
+    // Tìm tất cả các số thực trong chuỗi
+    const regexFloat = /[+-]?\d+\.\d+/g;
+    let numMatch;
+    while ((numMatch = regexFloat.exec(text)) !== null) {
+      matchedNumbers.push(parseFloat(numMatch[0]));
+    }
+
+    if (matchedNumbers.length >= 6 && matchedNumbers.length % 2 === 0) {
+      // Ghép cặp từng 2 số
+      for (let i = 0; i < matchedNumbers.length; i += 2) {
+        let n1 = matchedNumbers[i];
+        let n2 = matchedNumbers[i + 1];
+
+        let lat, lng;
+        // Nhận diện thông minh: Vĩ độ VN trong dải [8.0, 24.0], Kinh độ VN trong dải [102.0, 115.0]
+        if (n1 >= 8.0 && n1 <= 24.0 && n2 >= 102.0 && n2 <= 115.0) {
+          lat = n1;
+          lng = n2;
+        } else if (n2 >= 8.0 && n2 <= 24.0 && n1 >= 102.0 && n1 <= 115.0) {
+          lat = n2;
+          lng = n1;
+        } else {
+          lat = n1;
+          lng = n2;
+        }
+        resultPoints.push([Number(lat.toFixed(6)), Number(lng.toFixed(6))]);
+      }
+    } else {
+      // Thử phân tích theo từng dòng
+      const lines = text.split(/[\r\n]+/);
+      for (const line of lines) {
+        const lineFloats = [];
+        let m;
+        const re = /[+-]?\d+(?:\.\d+)?/g;
+        while ((m = re.exec(line)) !== null) {
+          lineFloats.push(parseFloat(m[0]));
+        }
+        if (lineFloats.length >= 2) {
+          let lat = lineFloats[0];
+          let lng = lineFloats[1];
+          if (lat >= 100 && lng <= 30) {
+            // Đảo lại nếu bị lộn
+            lat = lineFloats[1];
+            lng = lineFloats[0];
+          }
+          resultPoints.push([Number(lat.toFixed(6)), Number(lng.toFixed(6))]);
+        }
+      }
+    }
+
+    // Loại bỏ điểm lặp lại liên tiếp
+    const uniquePoints = [];
+    resultPoints.forEach((pt, idx) => {
+      if (idx === 0) {
+        uniquePoints.push(pt);
+      } else {
+        const prev = uniquePoints[uniquePoints.length - 1];
+        if (Math.abs(prev[0] - pt[0]) > 0.000001 || Math.abs(prev[1] - pt[1]) > 0.000001) {
+          uniquePoints.push(pt);
+        }
+      }
+    });
+
+    // Nếu điểm cuối trùng điểm đầu (khép kín), bỏ điểm cuối để render form chuẩn
+    if (uniquePoints.length > 3) {
+      const first = uniquePoints[0];
+      const last = uniquePoints[uniquePoints.length - 1];
+      if (Math.abs(first[0] - last[0]) < 0.000001 && Math.abs(first[1] - last[1]) < 0.000001) {
+        uniquePoints.pop();
+      }
+    }
+
+    return uniquePoints;
+  },
+
+  applyPastedCoords() {
+    const textarea = document.getElementById('paste-coords-textarea');
+    if (!textarea || !textarea.value.trim()) {
+      alert('Vui lòng dán văn bản chứa tọa độ vào ô trước khi áp dụng.');
+      return;
+    }
+
+    const raw = textarea.value.trim();
+    const parsedPoints = this.parseCoordinatesFromText(raw);
+
+    if (parsedPoints.length < 3) {
+      alert(`⚠️ Hệ thống chỉ nhận diện được ${parsedPoints.length} điểm tọa độ hợp lệ. Cần tối thiểu 3 điểm tọa độ để tạo thành một vùng sản xuất khép kín.\n\nVui lòng kiểm tra lại văn bản copy từ Google Maps.`);
+      return;
+    }
+
+    // Gán danh sách tọa độ mới
+    this.currentZoneCoords = parsedPoints;
+    const areaM2 = this.calculateAreaM2(this.currentZoneCoords);
+    const ha = (areaM2 / 10000).toFixed(2);
+    const sao = (areaM2 / 500).toFixed(1);
+
+    const areaInput = document.getElementById('zone-edit-area');
+    if (areaInput) areaInput.value = areaM2;
+
+    this.renderZoneCoordsTable();
+    this.closePasteCoordsModal();
+
+    // Nếu đang ở chế độ chỉnh sửa đỉnh, cập nhật lên đa giác
+    if (this.drawMode === 'vertex_edit') {
+      if (this.tempPolygon) this.tempPolygon.setLatLngs(this.currentZoneCoords);
+      this.renderVertexHandles();
+      this.map.fitBounds(this.tempPolygon.getBounds(), { padding: [60, 60] });
+    }
+
+    if (window.AgriSync && AgriSync.showLiveToast) {
+      AgriSync.showLiveToast(`✅ Đã nạp thành công ${parsedPoints.length} điểm tọa độ! Diện tích: ${Number(areaM2).toLocaleString('vi-VN')} m² (~${sao} sào)`);
+    } else {
+      alert(`✅ Đã nạp thành công ${parsedPoints.length} điểm tọa độ từ Maps!\n- Diện tích tính toán: ${Number(areaM2).toLocaleString('vi-VN')} m² (~${sao} sào | ${ha} ha)`);
+    }
+  },
+
+  copyAllZoneCoords() {
+    if (!this.currentZoneCoords || this.currentZoneCoords.length === 0) {
+      alert('Chưa có danh sách tọa độ để sao chép.');
+      return;
+    }
+
+    const textToCopy = this.currentZoneCoords.map((pt, idx) => `${pt[0].toFixed(6)}, ${pt[1].toFixed(6)}`).join('\n');
+
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(textToCopy);
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = textToCopy;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+
+    if (window.AgriSync && AgriSync.showLiveToast) {
+      AgriSync.showLiveToast(`📄 Đã sao chép toàn bộ ${this.currentZoneCoords.length} điểm tọa độ của vùng vào Clipboard!`);
+    } else {
+      alert(`Đã sao chép ${this.currentZoneCoords.length} điểm tọa độ của vùng vào bộ nhớ tạm! Bạn có thể dán sang Google Maps / Zalo / Excel.`);
+    }
+  },
+
   calculateAreaM2(points) {
     if (points.length < 3) return 0;
     try {

@@ -58,7 +58,7 @@
   </script>
 
   <!-- Custom CSS with Cache Buster -->
-  <link rel="stylesheet" href="css/style.css?v=3.1.2">
+  <link rel="stylesheet" href="css/style.css?v=3.1.3">
 </head>
 <body class="light-mode">
   <div id="app" class="app-container">
@@ -2521,13 +2521,19 @@
                 </div>
                 <div style="display: flex; gap: 6px; flex-wrap: wrap;">
                   <button type="button" class="btn btn-emerald btn-sm" onclick="AgriMap.startVisualVertexEditing()" style="font-weight: 700; box-shadow: 0 2px 8px rgba(5,150,105,0.3);" title="Kéo thả điểm chốt ranh giới">
-                    <i data-lucide="move"></i> <span>🖐️ Kéo Điểm Chốt Ranh Giới</span>
+                    <i data-lucide="move"></i> <span>🖐️ Kéo Điểm Chốt</span>
                   </button>
-                  <button type="button" class="btn btn-primary btn-sm" onclick="AgriMap.startRedrawCurrentZone()" style="font-weight: 700; background: #0284c7; border-color: #0284c7;" title="Chấm điểm vẽ lại ranh giới mới">
-                    <i data-lucide="pen-tool"></i> <span>✍️ Vẽ Lại Vùng Này</span>
+                  <button type="button" class="btn btn-primary btn-sm" onclick="AgriMap.openPasteCoordsModal()" style="font-weight: 700; background: #0284c7; border-color: #0284c7;" title="Dán tọa độ copy từ Google Maps / Zalo / Excel">
+                    <i data-lucide="clipboard-paste"></i> <span>📋 Dán Tọa Độ Từ Maps</span>
+                  </button>
+                  <button type="button" class="btn btn-outline btn-sm" onclick="AgriMap.copyAllZoneCoords()" title="Sao chép toàn bộ danh sách tọa độ vùng">
+                    <i data-lucide="copy"></i> <span>📄 Copy Tọa Độ</span>
+                  </button>
+                  <button type="button" class="btn btn-outline btn-sm" onclick="AgriMap.startRedrawCurrentZone()" title="Chấm điểm vẽ lại ranh giới mới">
+                    <i data-lucide="pen-tool"></i> <span>✍️ Vẽ Lại</span>
                   </button>
                   <button type="button" class="btn btn-outline btn-sm" onclick="AgriMap.addGpsVertexToZone()" title="Lấy vị trí GPS thực tế ngoài đồng">
-                    <i data-lucide="crosshair"></i> <span>🎯 Thêm Điểm GPS</span>
+                    <i data-lucide="crosshair"></i> <span>🎯 GPS</span>
                   </button>
                 </div>
               </div>
@@ -2540,7 +2546,11 @@
                 <span style="font-size: 0.72rem; color: var(--primary);">Bấm để mở ▾</span>
               </summary>
               <div class="coords-box" style="margin-top: 8px;">
-                <div class="coords-box-header" style="display: flex; justify-content: flex-end; margin-bottom: 6px;">
+                <div class="coords-box-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;">
+                  <div style="display: flex; gap: 6px;">
+                    <button type="button" class="btn btn-sm btn-outline" onclick="AgriMap.openPasteCoordsModal()"><i data-lucide="clipboard-paste"></i> Dán từ Maps</button>
+                    <button type="button" class="btn btn-sm btn-outline" onclick="AgriMap.copyAllZoneCoords()"><i data-lucide="copy"></i> Copy tất cả</button>
+                  </div>
                   <button type="button" class="btn btn-sm btn-outline" onclick="AgriMap.addCoordinatePoint()"><i data-lucide="plus"></i> Thêm Điểm Tọa Độ</button>
                 </div>
                 <div class="table-responsive" style="max-height: 140px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 6px;">
@@ -2660,6 +2670,40 @@
             <button class="btn btn-outline" onclick="AgriMap.closeZoneModal()">Hủy</button>
             <button class="btn btn-emerald" id="btn-save-zone-modal"><i data-lucide="save"></i> Lưu & Đồng Bộ Dữ Liệu</button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: DÁN NHANH TỌA ĐỘ TỪ GOOGLE MAPS / GPS / ZALO / EXCEL -->
+    <div id="modal-paste-coords" class="modal-overlay">
+      <div class="modal-card" style="max-width: 580px;">
+        <div class="modal-header" style="background: linear-gradient(135deg, rgba(2, 132, 199, 0.1), transparent); padding: 14px 1.25rem;">
+          <h3 class="modal-title" style="color: #0284c7; display: flex; align-items: center; gap: 8px;">
+            <i data-lucide="clipboard-paste"></i> 📋 Dán Tọa Độ Từ Google Maps / GPS
+          </h3>
+          <button class="close-modal-btn" onclick="AgriMap.closePasteCoordsModal()"><i data-lucide="x"></i></button>
+        </div>
+        <div class="modal-body" style="padding: 1.25rem;">
+          <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 10px; line-height: 1.5;">
+            Sao chép tọa độ từ <strong>Google Maps, Google Earth, Zalo, Excel hoặc GPS máy định vị</strong> và dán (<kbd>Ctrl + V</kbd>) vào ô bên dưới:
+          </p>
+          
+          <div class="form-group">
+            <textarea id="paste-coords-textarea" rows="7" placeholder="Ví dụ các định dạng được hỗ trợ:&#10;15.9602, 108.205668&#10;15.962405, 108.205324&#10;15.961588, 108.203166&#10;15.9602, 108.201352&#10;hoặc link Google Maps: https://maps.google.com/?q=15.9602,108.2056" style="width: 100%; font-family: monospace; font-size: 0.82rem; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-app); color: var(--text-main); resize: vertical;"></textarea>
+          </div>
+
+          <div id="paste-coords-preview-msg" style="font-size: 0.78rem; font-weight: 600; color: var(--primary); margin-top: 6px; min-height: 20px;"></div>
+
+          <div style="background: rgba(2, 132, 199, 0.06); border-radius: 8px; padding: 8px 12px; margin-top: 10px; font-size: 0.75rem; color: var(--text-muted); display: flex; gap: 8px; align-items: flex-start;">
+            <i data-lucide="info" style="width: 16px; height: 16px; color: #0284c7; flex-shrink: 0; margin-top: 1px;"></i>
+            <span>Hệ thống tự động thông minh nhận diện Vĩ độ (Lat ~15.x) và Kinh độ (Lng ~108.x), tự lọc bỏ ký tự thừa, dấu phẩy, khoảng trắng.</span>
+          </div>
+        </div>
+        <div class="modal-footer" style="padding: 12px 1.25rem; display: flex; justify-content: flex-end; gap: 8px;">
+          <button class="btn btn-outline" onclick="AgriMap.closePasteCoordsModal()">Hủy</button>
+          <button class="btn btn-primary" onclick="AgriMap.applyPastedCoords()" style="background: #0284c7; border-color: #0284c7; font-weight: 700;">
+            <i data-lucide="check-circle-2"></i> ⚡ Áp Dụng Ngay Vào Vùng
+          </button>
         </div>
       </div>
     </div>
@@ -3513,23 +3557,23 @@
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 
   <!-- Embedded Data (Offline & file:// protocol support) -->
-  <script src="data/data_embedded.js?v=3.1.2"></script>
+  <script src="data/data_embedded.js?v=3.1.3"></script>
 
   <!-- Supabase JS SDK (v2) from CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase_config.js?v=3.1.2"></script>
+  <script src="js/supabase_config.js?v=3.1.3"></script>
 
   <!-- App JS Modules with Cache Buster -->
-  <script src="js/data.js?v=3.1.2"></script>
-  <script src="js/auth.js?v=3.1.2"></script>
-  <script src="js/sync.js?v=3.1.2"></script>
-  <script src="js/admin.js?v=3.1.2"></script>
-  <script src="js/map.js?v=3.1.2"></script>
-  <script src="js/records.js?v=3.1.2"></script>
-  <script src="js/farmers.js?v=3.1.2"></script>
-  <script src="js/analytics.js?v=3.1.2"></script>
-  <script src="js/services.js?v=3.1.2"></script>
-  <script src="js/purchasing.js?v=3.1.2"></script>
-  <script src="js/app.js?v=3.1.2"></script>
+  <script src="js/data.js?v=3.1.3"></script>
+  <script src="js/auth.js?v=3.1.3"></script>
+  <script src="js/sync.js?v=3.1.3"></script>
+  <script src="js/admin.js?v=3.1.3"></script>
+  <script src="js/map.js?v=3.1.3"></script>
+  <script src="js/records.js?v=3.1.3"></script>
+  <script src="js/farmers.js?v=3.1.3"></script>
+  <script src="js/analytics.js?v=3.1.3"></script>
+  <script src="js/services.js?v=3.1.3"></script>
+  <script src="js/purchasing.js?v=3.1.3"></script>
+  <script src="js/app.js?v=3.1.3"></script>
 </body>
 </html>
