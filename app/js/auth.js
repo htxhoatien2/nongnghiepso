@@ -642,7 +642,7 @@ const AgriAuth = {
     // 2. FIELD WEIGHING QUICK BUBBLE & PURCHASING CONTROLS
     const bubble = document.getElementById('floating-weighing-bubble');
     if (bubble) {
-      bubble.style.display = canWeigh ? 'flex' : 'none';
+      bubble.style.display = 'flex';
     }
     const btnStartPurchasing = document.getElementById('btn-start-purchasing-session');
     if (btnStartPurchasing) {

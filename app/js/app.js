@@ -306,7 +306,36 @@ const App = {
         e.target.classList.remove('open');
         if (window.AgriAdmin) AgriAdmin.isOpen = false;
       }
+
+      // Close floating quick menu when clicking outside
+      const quickMenu = document.getElementById('floating-quick-menu');
+      const bubble = document.getElementById('floating-weighing-bubble');
+      if (quickMenu && quickMenu.style.display !== 'none') {
+        if (!quickMenu.contains(e.target) && !bubble.contains(e.target)) {
+          App.closeFloatingQuickMenu();
+        }
+      }
     });
+  },
+
+  // Floating Quick Menu / Speed-Dial Toggle
+  toggleFloatingQuickMenu(event) {
+    if (event) event.stopPropagation();
+    const menu = document.getElementById('floating-quick-menu');
+    if (!menu) return;
+
+    const isVisible = menu.style.display === 'block';
+    if (isVisible) {
+      this.closeFloatingQuickMenu();
+    } else {
+      menu.style.display = 'block';
+      if (window.lucide) lucide.createIcons();
+    }
+  },
+
+  closeFloatingQuickMenu() {
+    const menu = document.getElementById('floating-quick-menu');
+    if (menu) menu.style.display = 'none';
   }
 };
 
