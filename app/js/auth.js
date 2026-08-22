@@ -4,7 +4,7 @@
  */
 
 const AgriAuth = {
-  // Pre-configured staff accounts for instant field deployment
+  // Pre-configured staff accounts for instant field deployment (Only 1 Super Admin initially)
   defaultUsers: [
     {
       id: 'usr_001',
@@ -22,101 +22,6 @@ const AgriAuth = {
       phone: '0905123456',
       email: 'htxhoatien2@gmail.com',
       ghi_chu: 'Quản trị viên tối cao (Super Admin) toàn hệ thống HTX Hòa Tiến 2',
-      date_joined: '2023-01-01',
-      active: true
-    },
-    {
-      id: 'usr_002',
-      username: 'ketoan',
-      pin: '1234',
-      fullname: 'Bộ Phận Kế Toán - Thủ Quỹ',
-      role: 'accountant',
-      roleName: '💰 Kế Toán / Thủ Quỹ',
-      cccd: '',
-      ngay_sinh: '',
-      gioi_tinh: 'Nữ',
-      dia_chi: 'HTX Hòa Tiến 2',
-      to_dan_pho: 'Tất cả các tổ',
-      assigned_zones: ['Tất cả các xứ đồng'],
-      phone: '',
-      email: '',
-      ghi_chu: 'Phụ trách thu nộp dịch vụ thủy nông, làm đất và quyết toán mua lúa',
-      date_joined: '2023-02-15',
-      active: true
-    },
-    {
-      id: 'usr_003',
-      username: 'diachinh',
-      pin: '2345',
-      fullname: 'Cán Bộ Địa Chính GIS',
-      role: 'cadastre',
-      roleName: '🗺️ Cán Bộ Địa Chính GIS',
-      cccd: '',
-      ngay_sinh: '',
-      gioi_tinh: 'Nam',
-      dia_chi: 'HTX Hòa Tiến 2',
-      to_dan_pho: 'Tất cả các tổ',
-      assigned_zones: ['Tất cả các xứ đồng'],
-      phone: '',
-      email: '',
-      ghi_chu: 'Biên tập bản đồ không gian GIS, số hóa ranh giới thửa đất',
-      date_joined: '2023-03-01',
-      active: true
-    },
-    {
-      id: 'usr_004',
-      username: 'canbo1',
-      pin: '1111',
-      fullname: 'Cán Bộ Cân Thu Mua',
-      role: 'weighing_staff',
-      roleName: '⚖️ Cán Bộ Cân Thu Mua',
-      cccd: '',
-      ngay_sinh: '',
-      gioi_tinh: 'Nam',
-      dia_chi: 'HTX Hòa Tiến 2',
-      to_dan_pho: 'Tổ 1, Tổ 2, Tổ 3, Tổ 4, Tổ 5',
-      assigned_zones: ['La Châu', 'Hà Ra 24', 'Hà Ra 28', 'Gò ổi'],
-      phone: '',
-      email: '',
-      ghi_chu: 'Cán bộ cân thu mua cơ động tại ruộng, nhận xe tải và gửi xác nhận Zalo',
-      date_joined: '2024-01-10',
-      active: true
-    },
-    {
-      id: 'usr_005',
-      username: 'truongthon',
-      pin: '5555',
-      fullname: 'Ban Điều Hành Tổ Dân Phố',
-      role: 'village_head',
-      roleName: '🏘️ Trưởng Thôn / Tổ Dân Phố',
-      cccd: '',
-      ngay_sinh: '',
-      gioi_tinh: 'Nam',
-      dia_chi: 'Xã Hòa Tiến',
-      to_dan_pho: 'Tổ 1 - Tổ 12',
-      assigned_zones: ['Tất cả các xứ đồng'],
-      phone: '',
-      email: '',
-      ghi_chu: 'Đôn đốc sản xuất và thu nộp dịch vụ nông nghiệp cho bà con',
-      date_joined: '2023-01-01',
-      active: true
-    },
-    {
-      id: 'usr_006',
-      username: 'nongdan',
-      pin: '0000',
-      fullname: 'Hộ Nông Dân / Xã Viên',
-      role: 'farmer',
-      roleName: '👨‍🌾 Hộ Nông Dân / Xã Viên',
-      cccd: '',
-      ngay_sinh: '',
-      gioi_tinh: 'Nam',
-      dia_chi: 'Xã Hòa Tiến',
-      to_dan_pho: 'Tất cả các tổ',
-      assigned_zones: ['Tất cả các xứ đồng'],
-      phone: '',
-      email: '',
-      ghi_chu: 'Hộ sản xuất xã viên tra cứu thông tin ruộng đất và lịch thu hoạch',
       date_joined: '2023-01-01',
       active: true
     }
@@ -258,32 +163,20 @@ const AgriAuth = {
   },
 
   loadUsers() {
-    const legacyNameMap = {
-      'Nguyễn Văn Giám Đốc': 'Ban Giám Đốc HTX',
-      'Lê Thị Kế Toán': 'Bộ Phận Kế Toán - Thủ Quỹ',
-      'Trần Văn Địa Chính': 'Cán Bộ Địa Chính GIS',
-      'Phạm Cân Lúa (Tổ 1-5)': 'Cán Bộ Cân Thu Mua',
-      'Võ Trưởng Thôn (Tổ 5)': 'Ban Điều Hành Tổ Dân Phố',
-      'Hồ Thị Vân (Xã Viên)': 'Hộ Nông Dân / Xã Viên'
-    };
-
     const saved = localStorage.getItem('agrigis_users');
     let loaded = [];
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          loaded = parsed.map(u => {
-            if (u && legacyNameMap[u.fullname]) {
-              u.fullname = legacyNameMap[u.fullname];
-            }
-            return u;
-          });
+          // Remove old mock template users usr_002 to usr_006 if they didn't have user input
+          const legacyMockIds = ['usr_002', 'usr_003', 'usr_004', 'usr_005', 'usr_006'];
+          loaded = parsed.filter(u => !legacyMockIds.includes(u.id));
         }
       } catch (e) {}
     }
 
-    // Always guarantee all 6 standard roles exist by merging
+    // Always ensure Super Admin usr_001 is present
     const defaultCopy = JSON.parse(JSON.stringify(this.defaultUsers));
     if (loaded.length === 0) {
       this.users = defaultCopy;
@@ -291,7 +184,7 @@ const AgriAuth = {
       defaultCopy.forEach(defU => {
         const exists = loaded.some(u => u.id === defU.id || u.username === defU.username);
         if (!exists) {
-          loaded.push(defU);
+          loaded.unshift(defU);
         }
       });
       this.users = loaded;
@@ -1138,10 +1031,10 @@ const AgriAuth = {
   switchLoginTab(tab) {
     const btnStd = document.getElementById('btn-auth-tab-standard');
     const btnOtp = document.getElementById('btn-auth-tab-otp');
-    const btnQuick = document.getElementById('btn-auth-tab-quick');
+    const btnReg = document.getElementById('btn-auth-tab-register');
     const paneStd = document.getElementById('auth-pane-standard');
     const paneOtp = document.getElementById('auth-pane-otp');
-    const paneQuick = document.getElementById('auth-pane-quick');
+    const paneReg = document.getElementById('auth-pane-register');
 
     if (btnStd) {
       btnStd.classList.toggle('active', tab === 'standard');
@@ -1151,58 +1044,22 @@ const AgriAuth = {
       btnOtp.classList.toggle('active', tab === 'otp');
       btnOtp.style.borderBottom = (tab === 'otp') ? '2px solid var(--primary)' : 'none';
     }
-    if (btnQuick) {
-      btnQuick.classList.toggle('active', tab === 'quick');
-      btnQuick.style.borderBottom = (tab === 'quick') ? '2px solid var(--primary)' : 'none';
+    if (btnReg) {
+      btnReg.classList.toggle('active', tab === 'register');
+      btnReg.style.borderBottom = (tab === 'register') ? '2px solid var(--primary)' : 'none';
     }
 
     if (paneStd) paneStd.style.display = (tab === 'standard') ? 'block' : 'none';
     if (paneOtp) paneOtp.style.display = (tab === 'otp') ? 'block' : 'none';
-    if (paneQuick) paneQuick.style.display = (tab === 'quick') ? 'block' : 'none';
-
-    if (tab === 'quick') {
-      this.renderQuickLoginCards();
-    }
+    if (paneReg) paneReg.style.display = (tab === 'register') ? 'block' : 'none';
   },
 
-  renderQuickLoginCards() {
-    const listEl = document.getElementById('role-switch-user-list');
-    if (!listEl) return;
-
-    listEl.innerHTML = this.users.map(u => {
-      const isCurrent = this.currentUser && this.currentUser.id === u.id;
-      return `
-        <div class="user-role-card ${isCurrent ? 'active' : ''}" onclick="AgriAuth.handleQuickLogin('${u.id}')" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border: 1.5px solid ${isCurrent ? 'var(--primary)' : 'var(--border-subtle)'}; border-radius: 10px; margin-bottom: 10px; cursor: pointer; background: ${isCurrent ? 'var(--primary-light)' : 'var(--bg-card)'}; transition: all 0.15s ease;">
-          <div style="display: flex; align-items: center; gap: 12px;">
-            <div style="width: 42px; height: 42px; border-radius: 50%; background: ${isCurrent ? 'var(--primary)' : 'var(--border-color)'}; color: ${isCurrent ? '#fff' : 'var(--text-main)'}; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; flex-shrink: 0;">
-              ${(u.fullname || 'G').charAt(0)}
-            </div>
-            <div>
-              <strong style="display: block; font-size: 0.98rem; color: var(--text-main);">${u.fullname}</strong>
-              <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600;">${u.roleName} (@${u.username})</span>
-              <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">🔑 PIN: <code style="background: rgba(0,0,0,0.06); padding: 1px 5px; border-radius: 4px; font-weight: 700;">${u.pin || '1234'}</code> • ${u.to_dan_pho || 'Toàn xã'}</div>
-            </div>
-          </div>
-          <div>
-            ${isCurrent ? '<span class="badge badge-emerald" style="font-size: 0.78rem; padding: 4px 10px;">✓ Đang dùng</span>' : '<button class="btn btn-sm btn-outline" style="font-weight: 700;">Đăng nhập ⚡</button>'}
-          </div>
-        </div>
-      `;
-    }).join('');
-    if (window.lucide) lucide.createIcons();
+  openRoleSwitchModal() {
+    this.openLoginModal('standard');
   },
 
-  switchUserById(userId) {
-    const user = this.users.find(u => u.id === userId);
-    if (!user) return;
-    this.currentUser = user;
-    this.saveSession();
-    this.updateUserUI();
-    this.applyRoleRestrictions();
-    this.logActivity('CHUYỂN_VAI_TRÒ', `Đăng nhập/chuyển sang tài khoản ${user.fullname} (${user.roleName})`);
-    if (window.AgriSync) {
-      AgriSync.showLiveToast(`Đang làm việc với vai trò: ${user.fullname} (${user.roleName})`);
-    }
+  closeRoleSwitchModal() {
+    this.closeLoginModal();
   },
 
   async handleStandardLogin(prefix) {
@@ -1435,48 +1292,7 @@ const AgriAuth = {
   // USER REGISTRATION & EMAIL OTP VERIFICATION WORKFLOW
   // (Quy trình Đăng ký mới, Xác thực Email OTP & Đưa vào Hàng đợi chờ duyệt)
   // =========================================================================
-  defaultPendingUsers: [
-    {
-      id: 'reg_101',
-      username: 'nguyenvancanh',
-      pin: '1234',
-      fullname: 'Nguyễn Văn Canh',
-      email: 'canh.nguyen@gmail.com',
-      phone: '0918765432',
-      cccd: '048085009876',
-      ngay_sinh: '1986-08-15',
-      gioi_tinh: 'Nam',
-      dia_chi: 'Thôn La Châu, Xã Hòa Tiến',
-      to_dan_pho: 'Tổ 3',
-      requested_role: 'farmer',
-      requested_role_name: '👨‍🌾 Hộ Nông Dân / Xã Viên',
-      requested_zones: ['La Châu', 'Hà Ra 24'],
-      email_verified: true,
-      status: 'pending_approval',
-      created_at: '2026-08-20 08:30:00',
-      note: 'Đăng ký tham gia HTX và kết nối 3 thửa ruộng vùng La Châu'
-    },
-    {
-      id: 'reg_102',
-      username: 'tranthimai',
-      pin: '2222',
-      fullname: 'Trần Thị Mai',
-      email: 'mai.tran@gmail.com',
-      phone: '0905987654',
-      cccd: '048190001234',
-      ngay_sinh: '1990-11-22',
-      gioi_tinh: 'Nữ',
-      dia_chi: 'Thôn Lệ Sơn Nam, Xã Hòa Tiến',
-      to_dan_pho: 'Tổ 5',
-      requested_role: 'weighing_staff',
-      requested_role_name: '⚖️ Cán Bộ Cân Thu Mua',
-      requested_zones: ['Lô 1,2,3,4,5-Màu', 'Lô 11 Thổ'],
-      email_verified: true,
-      status: 'pending_approval',
-      created_at: '2026-08-20 09:15:00',
-      note: 'Ứng tuyển hỗ trợ cân lúa vụ Đông Xuân tại bờ ruộng'
-    }
-  ],
+  defaultPendingUsers: [],
 
   pendingUsers: [],
 
@@ -1484,14 +1300,16 @@ const AgriAuth = {
     const saved = localStorage.getItem('agrigis_pending_users');
     if (saved) {
       try {
-        this.pendingUsers = JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        // Prune old mock demo records reg_101 & reg_102
+        this.pendingUsers = parsed.filter(u => u.id !== 'reg_101' && u.id !== 'reg_102');
       } catch (e) {
-        this.pendingUsers = JSON.parse(JSON.stringify(this.defaultPendingUsers));
+        this.pendingUsers = [];
       }
     } else {
-      this.pendingUsers = JSON.parse(JSON.stringify(this.defaultPendingUsers));
-      this.savePendingUsers();
+      this.pendingUsers = [];
     }
+    this.savePendingUsers();
     return this.pendingUsers;
   },
 
@@ -1514,63 +1332,85 @@ const AgriAuth = {
   },
 
   openRegisterModal() {
-    this.closeLoginModal();
-    const modal = document.getElementById('modal-auth-register');
-    if (modal) {
-      const err = document.getElementById('auth-register-error');
-      if (err) err.style.display = 'none';
-      modal.classList.add('open');
-      if (window.lucide) lucide.createIcons();
-    }
+    this.openLoginModal('register');
   },
 
   closeRegisterModal() {
-    const modal = document.getElementById('modal-auth-register');
-    if (modal) modal.classList.remove('open');
+    this.closeLoginModal();
   },
 
-  handleRegisterSubmit(prefix = 'reg') {
-    const fullname = document.getElementById(`${prefix}-fullname`)?.value.trim();
-    const username = document.getElementById(`${prefix}-username`)?.value.trim().toLowerCase();
-    const email = document.getElementById(`${prefix}-email`)?.value.trim().toLowerCase();
-    const phone = document.getElementById(`${prefix}-phone`)?.value.trim();
-    const cccd = document.getElementById(`${prefix}-cccd`)?.value.trim();
-    const pin = document.getElementById(`${prefix}-pin`)?.value.trim();
-    const pinConfirm = document.getElementById(`${prefix}-pin-confirm`)?.value.trim();
-    const role = document.getElementById(`${prefix}-role`)?.value || 'farmer';
-    const toDanPho = document.getElementById(`${prefix}-to`)?.value.trim() || 'Tổ 1';
-    const address = document.getElementById(`${prefix}-address`)?.value.trim() || 'Xã Hòa Tiến, Hòa Vang, Đà Nẵng';
-    const note = document.getElementById(`${prefix}-note`)?.value.trim() || 'Đăng ký tham gia HTX';
-    const errorEl = document.getElementById(`${prefix}-error`);
+  handleRegisterSubmit() {
+    const fullname = (document.getElementById('auth-reg-fullname') || document.getElementById('reg-fullname'))?.value.trim();
+    const email = (document.getElementById('auth-reg-email') || document.getElementById('reg-email'))?.value.trim().toLowerCase();
+    const phone = (document.getElementById('auth-reg-phone') || document.getElementById('reg-phone'))?.value.trim();
+    const cccd = (document.getElementById('auth-reg-cccd') || document.getElementById('reg-cccd'))?.value.trim() || '';
+    const toDanPho = (document.getElementById('auth-reg-todanpho') || document.getElementById('reg-to'))?.value || 'Tổ 1';
+    const role = (document.getElementById('auth-reg-role') || document.getElementById('reg-role'))?.value || 'farmer';
+    const pin = (document.getElementById('auth-reg-pin') || document.getElementById('reg-pin'))?.value.trim();
+    const note = (document.getElementById('auth-reg-note') || document.getElementById('reg-note'))?.value.trim() || '';
 
-    if (!fullname || !username || !email || !phone || !pin) {
-      if (errorEl) { errorEl.textContent = 'Vui lòng điền đầy đủ các thông tin bắt buộc (*)!'; errorEl.style.display = 'block'; }
+    const errorEl = document.getElementById('auth-register-error') || document.getElementById('reg-error');
+
+    if (!fullname || !email || !phone || !pin) {
+      if (errorEl) {
+        errorEl.textContent = 'Vui lòng điền đầy đủ các thông tin bắt buộc (*): Họ tên, Email, Số điện thoại và Mật khẩu/PIN!';
+        errorEl.style.display = 'block';
+      }
       return;
     }
 
     if (pin.length < 4) {
-      if (errorEl) { errorEl.textContent = 'Mã PIN / Mật khẩu phải có ít nhất 4 ký tự!'; errorEl.style.display = 'block'; }
+      if (errorEl) {
+        errorEl.textContent = 'Mã PIN / Mật khẩu phải có ít nhất 4 ký tự/chữ số!';
+        errorEl.style.display = 'block';
+      }
       return;
     }
 
-    if (pinConfirm && pin !== pinConfirm) {
-      if (errorEl) { errorEl.textContent = 'Xác nhận mã PIN không trùng khớp!'; errorEl.style.display = 'block'; }
+    // Auto-generate safe username from email prefix
+    let username = email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '');
+    if (!username) {
+      username = 'user' + (phone ? phone.slice(-4) : Date.now().toString().slice(-4));
+    }
+
+    this.loadUsers();
+    this.loadPendingUsers();
+
+    // Check duplicate in active users
+    const existingActive = this.users.find(u => 
+      (u.email && u.email.toLowerCase() === email) || 
+      (u.phone && u.phone === phone) ||
+      u.username === username
+    );
+    if (existingActive) {
+      if (errorEl) {
+        errorEl.textContent = `Email hoặc Số điện thoại này đã tồn tại trên hệ thống! Vui lòng đăng nhập hoặc dùng thông tin khác.`;
+        errorEl.style.display = 'block';
+      }
       return;
     }
 
-    // Check duplicate username or email
-    const existing = this.users.find(u => u.username === username || u.email === email || (u.phone && u.phone === phone));
-    if (existing) {
-      if (errorEl) { errorEl.textContent = `Tên đăng nhập, Email hoặc SĐT này đã được sử dụng trong hệ thống!`; errorEl.style.display = 'block'; }
+    // Check duplicate in pending queue
+    const existingPending = this.pendingUsers.find(u =>
+      u.status === 'pending_approval' && (
+        (u.email && u.email.toLowerCase() === email) || 
+        (u.phone && u.phone === phone)
+      )
+    );
+    if (existingPending) {
+      if (errorEl) {
+        errorEl.textContent = `Hồ sơ với Email hoặc SĐT này đang chờ Ban Giám Đốc HTX xét duyệt. Vui lòng liên hệ Hotline: 0916199945 để được hỗ trợ!`;
+        errorEl.style.display = 'block';
+      }
       return;
     }
 
     const roleNames = {
       director: '👑 Ban Giám Đốc HTX',
-      accountant: '💰 Kế Toán / Thủ Quỹ',
+      accountant: '💰 Bộ Phận Kế Toán - Thủ Quỹ',
       cadastre: '🗺️ Cán Bộ Địa Chính GIS',
       weighing_staff: '⚖️ Cán Bộ Cân Thu Mua',
-      village_head: '🏘️ Trưởng Thôn / Tổ Dân Phố',
+      village_head: '🏘️ Ban Điều Hành Tổ Dân Phố',
       farmer: '👨‍🌾 Hộ Nông Dân / Xã Viên'
     };
 
@@ -1584,14 +1424,14 @@ const AgriAuth = {
       cccd: cccd || 'Chưa cập nhật',
       ngay_sinh: '1990-01-01',
       gioi_tinh: 'Nam',
-      dia_chi: address,
+      dia_chi: `${toDanPho}, Xã Hòa Tiến`,
       to_dan_pho: toDanPho,
       requested_role: role,
       requested_role_name: roleNames[role] || '👨‍🌾 Hộ Nông Dân / Xã Viên',
-      requested_zones: ['La Châu', 'Hà Ra 24'],
+      requested_zones: ['Tất cả các xứ đồng'],
       email_verified: false,
       status: 'pending_approval',
-      created_at: new Date().toLocaleString('vi-VN'),
+      created_at: new Date().toISOString().replace('T', ' ').slice(0, 19),
       note
     };
 
@@ -1605,7 +1445,7 @@ const AgriAuth = {
       cccd: cccd || '',
       role: role,
       to_dan_pho: toDanPho,
-      dia_chi: address
+      dia_chi: `${toDanPho}, Xã Hòa Tiến`
     }).then(res => {
       console.log('Supabase SignUp status:', res);
     }).catch(err => {
@@ -1614,7 +1454,6 @@ const AgriAuth = {
 
     // Step 2: Trigger OTP Generation & Email Config Confirmation Modal
     this.sendEmailOTP(email, tempUserData);
-    this.closeRegisterModal();
   },
 
   sendEmailOTP(email, tempUserData) {

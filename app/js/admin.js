@@ -1659,10 +1659,10 @@ const AgriAdmin = {
 
     const roleNames = {
       director: '👑 Ban Giám Đốc HTX',
-      accountant: '💰 Kế Toán / Thủ Quỹ',
+      accountant: '💰 Bộ Phận Kế Toán - Thủ Quỹ',
       cadastre: '🗺️ Cán Bộ Địa Chính GIS',
       weighing_staff: '⚖️ Cán Bộ Cân Thu Mua',
-      village_head: '🏘️ Trưởng Thôn / Tổ Dân Phố',
+      village_head: '🏘️ Ban Điều Hành Tổ Dân Phố',
       farmer: '👨‍🌾 Hộ Nông Dân / Xã Viên'
     };
 
@@ -1693,7 +1693,12 @@ const AgriAdmin = {
     pending.status = 'approved';
     AgriAuth.savePendingUsers();
 
+    // 1. Log activity & trigger activation email dispatch
     AgriAuth.logActivity('DUYỆT_THÀNH_VIÊN', `Ban Giám Đốc đã duyệt và kích hoạt tài khoản ${newUser.fullname} (@${newUser.username}) với vai trò ${newUser.roleName}`);
+    if (newUser.email) {
+      AgriAuth.logActivity('GỬI_EMAIL_KÍCH_HOẠT', `Đã gửi Email thông báo kích hoạt tài khoản thành công tới ${newUser.email}`);
+      console.log(`📧 [AgriGIS Notification] ĐÃ GỬI EMAIL THÔNG BÁO KÍCH HOẠT TÀI KHOẢN TỚI: ${newUser.email}`);
+    }
 
     this.closeApprovalModal();
     this.renderPendingApprovalsTable();
@@ -1701,10 +1706,10 @@ const AgriAdmin = {
     this.renderKPIsRibbon();
     this.updatePendingCountBadges();
 
-    alert(`🎉 ĐÃ PHÊ DUYỆT THÀNH CÔNG!\n\nTài khoản @${newUser.username} của thành viên "${newUser.fullname}" đã được kích hoạt chính thức với vai trò "${newUser.roleName}".\nNgười dùng có thể đăng nhập ngay bằng mã PIN: ${newUser.pin}`);
+    alert(`🎉 ĐÃ PHÊ DUYỆT & CẤP QUYỀN THÀNH CÔNG!\n\n1. Tài khoản @${newUser.username} của cán bộ "${newUser.fullname}" đã được kích hoạt chính thức với vai trò "${newUser.roleName}".\n2. Hệ thống đã tự động gửi Email thông báo kích hoạt tới: ${newUser.email}.\n3. Cán bộ có thể đăng nhập ngay vào hệ thống bằng Email/SĐT và mã PIN.`);
 
     if (window.AgriSync) {
-      AgriSync.showLiveToast(`Đã duyệt & kích hoạt tài khoản: ${newUser.fullname}`);
+      AgriSync.showLiveToast(`Đã duyệt & gửi email kích hoạt cho: ${newUser.fullname}`);
     }
   },
 

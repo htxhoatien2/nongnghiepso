@@ -58,7 +58,7 @@
   </script>
 
   <!-- Custom CSS with Cache Buster -->
-  <link rel="stylesheet" href="css/style.css?v=3.1.9">
+  <link rel="stylesheet" href="css/style.css?v=3.2.0">
 </head>
 <body class="light-mode">
   <div id="app" class="app-container">
@@ -127,10 +127,6 @@
               <button class="dropdown-item" onclick="AgriAuth.closeUserDropdown(); AgriAuth.viewCurrentProfile();">
                 <i data-lucide="user-check"></i>
                 <span>Hồ sơ cán bộ</span>
-              </button>
-              <button class="dropdown-item" onclick="AgriAuth.closeUserDropdown(); AgriAuth.openRoleSwitchModal();">
-                <i data-lucide="refresh-cw"></i>
-                <span>Chuyển đổi vai trò</span>
               </button>
               <button class="dropdown-item text-primary" id="btn-dropdown-pwa-install" onclick="AgriAuth.closeUserDropdown(); App.installPWA();">
                 <i data-lucide="download"></i>
@@ -3105,8 +3101,8 @@
           <button id="btn-auth-tab-otp" class="btn btn-sm btn-outline" onclick="AgriAuth.switchLoginTab('otp')" style="flex: 1; border-radius: 0; border: none; padding: 10px; font-weight: 700; white-space: nowrap;">
             <i data-lucide="mail"></i> OTP Email
           </button>
-          <button id="btn-auth-tab-quick" class="btn btn-sm btn-outline" onclick="AgriAuth.switchLoginTab('quick')" style="flex: 1; border-radius: 0; border: none; padding: 10px; font-weight: 700; white-space: nowrap;">
-            <i data-lucide="zap"></i> Cán bộ mẫu
+          <button id="btn-auth-tab-register" class="btn btn-sm btn-outline" onclick="AgriAuth.switchLoginTab('register')" style="flex: 1; border-radius: 0; border: none; padding: 10px; font-weight: 700; white-space: nowrap; color: var(--primary);">
+            <i data-lucide="user-plus"></i> Đăng Ký
           </button>
         </div>
 
@@ -3140,6 +3136,14 @@
             <button class="btn btn-emerald btn-block" onclick="AgriAuth.handleStandardLogin()" style="padding: 10px; font-weight: 800; font-size: 0.95rem; width: 100%;">
               <i data-lucide="log-in"></i> ĐĂNG NHẬP VÀO HỆ THỐNG
             </button>
+          </div>
+
+          <!-- Registration Link for New Staff -->
+          <div style="text-align: center; margin-top: 14px; padding-top: 10px; border-top: 1px dashed var(--border-subtle);">
+            <span style="font-size: 0.82rem; color: var(--text-muted);">Cán bộ mới hoặc thành viên HTX chưa có tài khoản?</span><br>
+            <a href="javascript:void(0)" onclick="AgriAuth.switchLoginTab('register')" style="font-size: 0.88rem; color: var(--primary); font-weight: 800; text-decoration: underline; display: inline-flex; align-items: center; gap: 4px; margin-top: 4px;">
+              <i data-lucide="user-plus" style="width: 15px; height: 15px;"></i> Đăng ký tài khoản cán bộ mới tại đây ➔
+            </a>
           </div>
 
           <!-- OAuth Buttons Grid -->
@@ -3194,11 +3198,83 @@
           </div>
         </div>
 
-        <!-- PANE 3: FAST ROLE SWITCH / 1-TOUCH FIELD LOGIN -->
-        <div id="auth-pane-quick" class="modal-body" style="padding: 1.25rem; max-height: 420px; overflow-y: auto; display: none;">
-          <div style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 12px;">Bấm chọn 1 chạm vào cán bộ bất kỳ để đăng nhập nhanh ngoài đồng ruộng:</div>
-          <div id="role-switch-user-list">
-            <!-- Dynamically populated -->
+        <!-- PANE 3: ĐĂNG KÝ TÀI KHOẢN CÁN BỘ MỚI (GỬI EMAIL XÁC NHẬN & CHỜ ADMIN DUYỆT) -->
+        <div id="auth-pane-register" class="modal-body" style="padding: 1.25rem 1.5rem; max-height: 480px; overflow-y: auto; display: none;">
+          <div id="auth-register-error" class="alert-box" style="display: none; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444; padding: 8px 12px; border-radius: 8px; font-size: 0.84rem; margin-bottom: 12px; font-weight: 600;"></div>
+          <div id="auth-register-success" class="alert-box" style="display: none; background: rgba(5, 150, 105, 0.12); color: var(--primary); border: 1px solid var(--primary); padding: 12px; border-radius: 10px; font-size: 0.86rem; margin-bottom: 14px; font-weight: 600; line-height: 1.5;"></div>
+
+          <div id="auth-register-form-wrap">
+            <div style="background: rgba(5, 150, 105, 0.06); border: 1px solid rgba(5, 150, 105, 0.2); border-radius: 10px; padding: 10px 12px; margin-bottom: 14px; font-size: 0.8rem; color: var(--text-main); line-height: 1.4;">
+              <i data-lucide="shield-alert" style="color: var(--primary); vertical-align: middle; margin-right: 4px;"></i>
+              <strong>Quy trình bảo mật HTX:</strong> Sau khi đăng ký, hệ thống gửi email xác nhận. Hồ sơ sẽ được <strong>Ban Giám Đốc HTX phê duyệt & cấp quyền</strong> trước khi kích hoạt.
+            </div>
+
+            <div class="form-group" style="margin-bottom: 12px;">
+              <label class="form-label" style="font-weight: 700; font-size: 0.82rem;">Họ Và Tên Cán Bộ / Thành Viên *</label>
+              <input type="text" id="auth-reg-fullname" placeholder="Ví dụ: Nguyễn Văn Canh" class="form-input" required>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-weight: 700; font-size: 0.82rem;">Địa Chỉ Email *</label>
+                <input type="email" id="auth-reg-email" placeholder="canbo@gmail.com" class="form-input" required>
+                <small style="color: var(--text-muted); font-size: 0.72rem;">Nhận mail xác nhận & kích hoạt</small>
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-weight: 700; font-size: 0.82rem;">Số Điện Thoại Liên Hệ *</label>
+                <input type="tel" id="auth-reg-phone" placeholder="0905xxxxxx" class="form-input" required>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-weight: 700; font-size: 0.82rem;">Số CCCD / CMND *</label>
+                <input type="text" id="auth-reg-cccd" placeholder="048xxxxxxxx" class="form-input">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-weight: 700; font-size: 0.82rem;">Tổ Dân Phố / Thôn *</label>
+                <select id="auth-reg-todanpho" class="form-input">
+                  <option value="Tổ 1">Tổ 1 (Thôn La Châu)</option>
+                  <option value="Tổ 2">Tổ 2 (Thôn La Châu)</option>
+                  <option value="Tổ 3">Tổ 3 (Thôn La Châu)</option>
+                  <option value="Tổ 4">Tổ 4 (Thôn Lệ Sơn)</option>
+                  <option value="Tổ 5">Tổ 5 (Thôn Lệ Sơn)</option>
+                  <option value="Tổ 6">Tổ 6 (Thôn Nam Sơn)</option>
+                  <option value="Tổ 7">Tổ 7 (Thôn An Trạch)</option>
+                  <option value="Tổ 8">Tổ 8 (Thôn Cẩm Nê)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 12px;">
+              <label class="form-label" style="font-weight: 700; font-size: 0.82rem;">Vị Trí / Vai Trò Đề Xuất Cấp Quyền *</label>
+              <select id="auth-reg-role" class="form-input" style="font-weight: 700;">
+                <option value="accountant">💰 Bộ Phận Kế Toán - Thủ Quỹ</option>
+                <option value="cadastre">🗺️ Cán Bộ Địa Chính GIS / Số Hóa Thửa Đất</option>
+                <option value="weighing_staff">⚖️ Cán Bộ Cân Thu Mua Lúa Tại Bờ Ruộng</option>
+                <option value="village_head">🏘️ Ban Điều Hành Tổ Dân Phố / Trưởng Thôn</option>
+                <option value="farmer" selected>👨‍🌾 Hộ Nông Dân / Xã Viên HTX</option>
+                <option value="director">👑 Ban Giám Đốc HTX (Quản trị viên)</option>
+              </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 12px;">
+              <label class="form-label" style="font-weight: 700; font-size: 0.82rem;">Mã PIN / Mật Khẩu Khởi Tạo (Ít nhất 4 số) *</label>
+              <input type="password" id="auth-reg-pin" placeholder="Ví dụ: 1234 hoặc mật khẩu" class="form-input" required>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label class="form-label" style="font-weight: 700; font-size: 0.82rem;">Ghi Chú Công Tác / Ruộng Đất Phụ Trách</label>
+              <textarea id="auth-reg-note" class="form-input" rows="2" placeholder="Ví dụ: Phụ trách mẻ cân lúa tổ 3, hoặc số thửa ruộng sở hữu..."></textarea>
+            </div>
+
+            <button type="button" class="btn btn-emerald btn-block" onclick="AgriAuth.handleRegisterSubmit()" style="padding: 11px; font-weight: 800; font-size: 0.95rem; width: 100%;">
+              <i data-lucide="send"></i> GỬI HỒ SƠ ĐĂNG KÝ XÉT DUYỆT ➔
+            </button>
+
+            <div style="text-align: center; margin-top: 12px;">
+              <a href="javascript:void(0)" onclick="AgriAuth.switchLoginTab('standard')" style="font-size: 0.82rem; color: var(--text-muted); text-decoration: underline;">← Đã có tài khoản? Đăng nhập tại đây</a>
+            </div>
           </div>
         </div>
 
@@ -3653,23 +3729,23 @@
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 
   <!-- Embedded Data (Offline & file:// protocol support) -->
-  <script src="data/data_embedded.js?v=3.1.9"></script>
+  <script src="data/data_embedded.js?v=3.2.0"></script>
 
   <!-- Supabase JS SDK (v2) from CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase_config.js?v=3.1.9"></script>
+  <script src="js/supabase_config.js?v=3.2.0"></script>
 
   <!-- App JS Modules with Cache Buster -->
-  <script src="js/data.js?v=3.1.9"></script>
-  <script src="js/auth.js?v=3.1.9"></script>
-  <script src="js/sync.js?v=3.1.9"></script>
-  <script src="js/admin.js?v=3.1.9"></script>
-  <script src="js/map.js?v=3.1.9"></script>
-  <script src="js/records.js?v=3.1.9"></script>
-  <script src="js/farmers.js?v=3.1.9"></script>
-  <script src="js/analytics.js?v=3.1.9"></script>
-  <script src="js/services.js?v=3.1.9"></script>
-  <script src="js/purchasing.js?v=3.1.9"></script>
-  <script src="js/app.js?v=3.1.9"></script>
+  <script src="js/data.js?v=3.2.0"></script>
+  <script src="js/auth.js?v=3.2.0"></script>
+  <script src="js/sync.js?v=3.2.0"></script>
+  <script src="js/admin.js?v=3.2.0"></script>
+  <script src="js/map.js?v=3.2.0"></script>
+  <script src="js/records.js?v=3.2.0"></script>
+  <script src="js/farmers.js?v=3.2.0"></script>
+  <script src="js/analytics.js?v=3.2.0"></script>
+  <script src="js/services.js?v=3.2.0"></script>
+  <script src="js/purchasing.js?v=3.2.0"></script>
+  <script src="js/app.js?v=3.2.0"></script>
 </body>
 </html>
