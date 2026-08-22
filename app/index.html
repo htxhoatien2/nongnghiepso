@@ -58,7 +58,7 @@
   </script>
 
   <!-- Custom CSS with Cache Buster -->
-  <link rel="stylesheet" href="css/style.css?v=3.1.8">
+  <link rel="stylesheet" href="css/style.css?v=3.1.9">
 </head>
 <body class="light-mode">
   <div id="app" class="app-container">
@@ -112,7 +112,7 @@
               <div class="dropdown-avatar" id="dropdown-user-avatar">G</div>
               <div class="dropdown-user-details" style="overflow: hidden;">
                 <span id="dropdown-user-username" style="font-size: 0.88rem; font-weight: 800; color: var(--primary); display: block;">@giamdoc</span>
-                <strong id="dropdown-user-fullname" style="font-size: 0.82rem; color: var(--text-main); display: block; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">Nguyễn Văn Giám Đốc</strong>
+                <strong id="dropdown-user-fullname" style="font-size: 0.82rem; color: var(--text-main); display: block; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">Ban Giám Đốc HTX</strong>
                 <span id="dropdown-user-role" class="badge badge-purple" style="font-size: 0.68rem; margin-top: 3px; display: inline-block;">👑 Ban Giám Đốc HTX</span>
               </div>
             </div>
@@ -3285,6 +3285,77 @@
       </div>
     </div>
 
+    <!-- MODAL: HỒ SƠ CÁN BỘ & THÔNG TIN TÁC NGHIỆP HTX -->
+    <div id="modal-auth-user-profile" class="modal-overlay">
+      <div class="modal-card" style="max-width: 540px; border-radius: 18px; overflow: hidden;">
+        <div class="modal-header" style="background: linear-gradient(135deg, rgba(5, 150, 105, 0.12), rgba(59, 130, 246, 0.08)); padding: 12px 1.25rem;">
+          <div class="modal-title-wrap">
+            <div class="avatar-circle" id="profile-modal-avatar" style="background: var(--primary); color: #fff; width: 40px; height: 40px; font-size: 1.1rem; font-weight: 800;">
+              G
+            </div>
+            <div>
+              <h3 class="modal-title" style="font-size: 1.05rem; font-weight: 800;">Hồ Sơ Cán Bộ & Tác Nghiệp</h3>
+              <span class="modal-sub" id="profile-modal-role-sub" style="font-size: 0.76rem;">👑 Ban Giám Đốc HTX</span>
+            </div>
+          </div>
+          <button class="close-modal-btn" onclick="AgriAuth.closeProfileModal()"><i data-lucide="x"></i></button>
+        </div>
+
+        <div class="modal-body" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 12px;">
+          <div id="profile-modal-alert" class="alert-box" style="display: none; padding: 8px 12px; border-radius: 8px; font-size: 0.84rem; font-weight: 600;"></div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="font-weight: 700; font-size: 0.78rem; text-transform: uppercase; color: var(--text-muted);">Tài Khoản / Username</label>
+              <input type="text" id="profile-modal-username" class="form-input" disabled style="background: var(--bg-app); font-weight: 800; color: var(--primary);">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="font-weight: 700; font-size: 0.78rem; text-transform: uppercase; color: var(--text-muted);">Vai Trò / Phân Quyền</label>
+              <input type="text" id="profile-modal-role-name" class="form-input" disabled style="background: var(--bg-app); font-weight: 700; color: var(--text-main);">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label" style="font-weight: 700; font-size: 0.8rem; color: var(--text-main);">Họ Và Tên Cán Bộ *</label>
+            <input type="text" id="profile-modal-fullname" class="form-input" placeholder="Ví dụ: Nguyễn Văn A - Chủ tịch HĐQT" style="font-size: 0.95rem; font-weight: 700;">
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="font-weight: 700; font-size: 0.8rem; color: var(--text-main);">Số Điện Thoại</label>
+              <input type="text" id="profile-modal-phone" class="form-input" placeholder="0905xxxxxx" style="font-size: 0.9rem;">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="font-weight: 700; font-size: 0.8rem; color: var(--text-main);">Email Liên Hệ</label>
+              <input type="email" id="profile-modal-email" class="form-input" placeholder="email@gmail.com" style="font-size: 0.9rem;">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label" style="font-weight: 700; font-size: 0.8rem; color: var(--text-main);">Địa Chỉ / Thôn / Đơn Vị</label>
+            <input type="text" id="profile-modal-address" class="form-input" placeholder="Thôn La Châu, Xã Hòa Tiến..." style="font-size: 0.85rem;">
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label" style="font-weight: 700; font-size: 0.8rem; color: var(--text-main);">Ghi Chú / Chức Danh Công Tác</label>
+            <input type="text" id="profile-modal-note" class="form-input" placeholder="Nhiệm vụ phụ trách trong HTX..." style="font-size: 0.85rem;">
+          </div>
+        </div>
+
+        <div class="modal-footer" style="padding: 10px 1.25rem; border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; background: var(--bg-surface);">
+          <button type="button" class="btn btn-outline" onclick="AgriAuth.closeProfileModal(); AgriAuth.openChangePasswordModal();" style="display: flex; align-items: center; gap: 5px; font-weight: 700;">
+            <i data-lucide="key"></i> <span>Đổi Mã PIN</span>
+          </button>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" class="btn btn-outline" onclick="AgriAuth.closeProfileModal()">Đóng</button>
+            <button type="button" class="btn btn-emerald" onclick="AgriAuth.saveProfileChanges()" style="display: flex; align-items: center; gap: 6px; font-weight: 800;">
+              <i data-lucide="save"></i> <span>LƯU HỒ SƠ</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- MODAL: CHANGE PASSWORD / ĐỔI MÃ PIN TRONG HỒ SƠ -->
     <div id="modal-auth-change-password" class="modal-overlay">
       <div class="modal-card" style="max-width: 460px; border-radius: 16px;">
@@ -3582,23 +3653,23 @@
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 
   <!-- Embedded Data (Offline & file:// protocol support) -->
-  <script src="data/data_embedded.js?v=3.1.8"></script>
+  <script src="data/data_embedded.js?v=3.1.9"></script>
 
   <!-- Supabase JS SDK (v2) from CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase_config.js?v=3.1.8"></script>
+  <script src="js/supabase_config.js?v=3.1.9"></script>
 
   <!-- App JS Modules with Cache Buster -->
-  <script src="js/data.js?v=3.1.8"></script>
-  <script src="js/auth.js?v=3.1.8"></script>
-  <script src="js/sync.js?v=3.1.8"></script>
-  <script src="js/admin.js?v=3.1.8"></script>
-  <script src="js/map.js?v=3.1.8"></script>
-  <script src="js/records.js?v=3.1.8"></script>
-  <script src="js/farmers.js?v=3.1.8"></script>
-  <script src="js/analytics.js?v=3.1.8"></script>
-  <script src="js/services.js?v=3.1.8"></script>
-  <script src="js/purchasing.js?v=3.1.8"></script>
-  <script src="js/app.js?v=3.1.8"></script>
+  <script src="js/data.js?v=3.1.9"></script>
+  <script src="js/auth.js?v=3.1.9"></script>
+  <script src="js/sync.js?v=3.1.9"></script>
+  <script src="js/admin.js?v=3.1.9"></script>
+  <script src="js/map.js?v=3.1.9"></script>
+  <script src="js/records.js?v=3.1.9"></script>
+  <script src="js/farmers.js?v=3.1.9"></script>
+  <script src="js/analytics.js?v=3.1.9"></script>
+  <script src="js/services.js?v=3.1.9"></script>
+  <script src="js/purchasing.js?v=3.1.9"></script>
+  <script src="js/app.js?v=3.1.9"></script>
 </body>
 </html>

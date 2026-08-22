@@ -10,18 +10,18 @@ const AgriAuth = {
       id: 'usr_001',
       username: 'giamdoc',
       pin: '8888',
-      fullname: 'Nguyễn Văn Giám Đốc',
+      fullname: 'Ban Giám Đốc HTX',
       role: 'director',
       roleName: '👑 Ban Giám Đốc HTX',
-      cccd: '048085001234',
-      ngay_sinh: '1975-05-15',
+      cccd: '',
+      ngay_sinh: '',
       gioi_tinh: 'Nam',
       dia_chi: 'Thôn La Châu, Xã Hòa Tiến',
       to_dan_pho: 'Tất cả các tổ',
       assigned_zones: ['Tất cả các xứ đồng'],
       phone: '0905123456',
-      email: 'giamdoc.hoatien@agrigis.vn',
-      ghi_chu: 'Quản trị viên tối cao (Super Admin) toàn hệ thống HTX',
+      email: 'htxhoatien2@gmail.com',
+      ghi_chu: 'Quản trị viên tối cao (Super Admin) toàn hệ thống HTX Hòa Tiến 2',
       date_joined: '2023-01-01',
       active: true
     },
@@ -29,17 +29,17 @@ const AgriAuth = {
       id: 'usr_002',
       username: 'ketoan',
       pin: '1234',
-      fullname: 'Lê Thị Kế Toán',
+      fullname: 'Bộ Phận Kế Toán - Thủ Quỹ',
       role: 'accountant',
       roleName: '💰 Kế Toán / Thủ Quỹ',
-      cccd: '048188002345',
-      ngay_sinh: '1982-10-20',
+      cccd: '',
+      ngay_sinh: '',
       gioi_tinh: 'Nữ',
-      dia_chi: 'Thôn An Trạch, Xã Hòa Tiến',
+      dia_chi: 'HTX Hòa Tiến 2',
       to_dan_pho: 'Tất cả các tổ',
       assigned_zones: ['Tất cả các xứ đồng'],
-      phone: '0905234567',
-      email: 'ketoan.hoatien@agrigis.vn',
+      phone: '',
+      email: '',
       ghi_chu: 'Phụ trách thu nộp dịch vụ thủy nông, làm đất và quyết toán mua lúa',
       date_joined: '2023-02-15',
       active: true
@@ -48,17 +48,17 @@ const AgriAuth = {
       id: 'usr_003',
       username: 'diachinh',
       pin: '2345',
-      fullname: 'Trần Văn Địa Chính',
+      fullname: 'Cán Bộ Địa Chính GIS',
       role: 'cadastre',
       roleName: '🗺️ Cán Bộ Địa Chính GIS',
-      cccd: '048090003456',
-      ngay_sinh: '1988-03-12',
+      cccd: '',
+      ngay_sinh: '',
       gioi_tinh: 'Nam',
-      dia_chi: 'Thôn Lệ Sơn Nam, Xã Hòa Tiến',
+      dia_chi: 'HTX Hòa Tiến 2',
       to_dan_pho: 'Tất cả các tổ',
       assigned_zones: ['Tất cả các xứ đồng'],
-      phone: '0905345678',
-      email: 'diachinh.hoatien@agrigis.vn',
+      phone: '',
+      email: '',
       ghi_chu: 'Biên tập bản đồ không gian GIS, số hóa ranh giới thửa đất',
       date_joined: '2023-03-01',
       active: true
@@ -67,17 +67,17 @@ const AgriAuth = {
       id: 'usr_004',
       username: 'canbo1',
       pin: '1111',
-      fullname: 'Phạm Cân Lúa (Tổ 1-5)',
+      fullname: 'Cán Bộ Cân Thu Mua',
       role: 'weighing_staff',
       roleName: '⚖️ Cán Bộ Cân Thu Mua',
-      cccd: '048092004567',
-      ngay_sinh: '1992-07-24',
+      cccd: '',
+      ngay_sinh: '',
       gioi_tinh: 'Nam',
-      dia_chi: 'Thôn La Châu, Xã Hòa Tiến',
+      dia_chi: 'HTX Hòa Tiến 2',
       to_dan_pho: 'Tổ 1, Tổ 2, Tổ 3, Tổ 4, Tổ 5',
       assigned_zones: ['La Châu', 'Hà Ra 24', 'Hà Ra 28', 'Gò ổi'],
-      phone: '0905456789',
-      email: 'canbolua1@agrigis.vn',
+      phone: '',
+      email: '',
       ghi_chu: 'Cán bộ cân thu mua cơ động tại ruộng, nhận xe tải và gửi xác nhận Zalo',
       date_joined: '2024-01-10',
       active: true
@@ -86,18 +86,18 @@ const AgriAuth = {
       id: 'usr_005',
       username: 'truongthon',
       pin: '5555',
-      fullname: 'Võ Trưởng Thôn (Tổ 5)',
+      fullname: 'Ban Điều Hành Tổ Dân Phố',
       role: 'village_head',
       roleName: '🏘️ Trưởng Thôn / Tổ Dân Phố',
-      cccd: '048070005678',
-      ngay_sinh: '1970-11-05',
+      cccd: '',
+      ngay_sinh: '',
       gioi_tinh: 'Nam',
-      dia_chi: 'Tổ 5, Thôn La Châu, Xã Hòa Tiến',
-      to_dan_pho: 'Tổ 5',
-      assigned_zones: ['Lô 1,2,3,4,5-Màu', 'Lô 11 Thổ', 'Lô 12'],
-      phone: '0905567890',
-      email: 'to5.hoatien@agrigis.vn',
-      ghi_chu: 'Đôn đốc sản xuất và thu nộp dịch vụ nông nghiệp cho bà con Tổ 5',
+      dia_chi: 'Xã Hòa Tiến',
+      to_dan_pho: 'Tổ 1 - Tổ 12',
+      assigned_zones: ['Tất cả các xứ đồng'],
+      phone: '',
+      email: '',
+      ghi_chu: 'Đôn đốc sản xuất và thu nộp dịch vụ nông nghiệp cho bà con',
       date_joined: '2023-01-01',
       active: true
     },
@@ -105,18 +105,18 @@ const AgriAuth = {
       id: 'usr_006',
       username: 'nongdan',
       pin: '0000',
-      fullname: 'Hồ Thị Vân (Xã Viên)',
+      fullname: 'Hộ Nông Dân / Xã Viên',
       role: 'farmer',
       roleName: '👨‍🌾 Hộ Nông Dân / Xã Viên',
-      cccd: '048195006789',
-      ngay_sinh: '1985-09-18',
-      gioi_tinh: 'Nữ',
-      dia_chi: 'Tổ 5, Thôn La Châu, Xã Hòa Tiến',
-      to_dan_pho: 'Tổ 5',
-      assigned_zones: ['La Châu', 'Lô 1,2,3,4,5-Màu'],
-      phone: '0934969931',
+      cccd: '',
+      ngay_sinh: '',
+      gioi_tinh: 'Nam',
+      dia_chi: 'Xã Hòa Tiến',
+      to_dan_pho: 'Tất cả các tổ',
+      assigned_zones: ['Tất cả các xứ đồng'],
+      phone: '',
       email: '',
-      ghi_chu: 'Hộ sản xuất xã viên tiêu biểu tích tụ 1.8 ha ruộng lúa',
+      ghi_chu: 'Hộ sản xuất xã viên tra cứu thông tin ruộng đất và lịch thu hoạch',
       date_joined: '2023-01-01',
       active: true
     }
@@ -258,13 +258,27 @@ const AgriAuth = {
   },
 
   loadUsers() {
+    const legacyNameMap = {
+      'Nguyễn Văn Giám Đốc': 'Ban Giám Đốc HTX',
+      'Lê Thị Kế Toán': 'Bộ Phận Kế Toán - Thủ Quỹ',
+      'Trần Văn Địa Chính': 'Cán Bộ Địa Chính GIS',
+      'Phạm Cân Lúa (Tổ 1-5)': 'Cán Bộ Cân Thu Mua',
+      'Võ Trưởng Thôn (Tổ 5)': 'Ban Điều Hành Tổ Dân Phố',
+      'Hồ Thị Vân (Xã Viên)': 'Hộ Nông Dân / Xã Viên'
+    };
+
     const saved = localStorage.getItem('agrigis_users');
     let loaded = [];
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          loaded = parsed;
+          loaded = parsed.map(u => {
+            if (u && legacyNameMap[u.fullname]) {
+              u.fullname = legacyNameMap[u.fullname];
+            }
+            return u;
+          });
         }
       } catch (e) {}
     }
@@ -310,12 +324,25 @@ const AgriAuth = {
     if (!this.users || this.users.length === 0) {
       this.loadUsers();
     }
+    const legacyNameMap = {
+      'Nguyễn Văn Giám Đốc': 'Ban Giám Đốc HTX',
+      'Lê Thị Kế Toán': 'Bộ Phận Kế Toán - Thủ Quỹ',
+      'Trần Văn Địa Chính': 'Cán Bộ Địa Chính GIS',
+      'Phạm Cân Lúa (Tổ 1-5)': 'Cán Bộ Cân Thu Mua',
+      'Võ Trưởng Thôn (Tổ 5)': 'Ban Điều Hành Tổ Dân Phố',
+      'Hồ Thị Vân (Xã Viên)': 'Hộ Nông Dân / Xã Viên'
+    };
+
     const savedUser = localStorage.getItem('agrigis_current_user');
     if (savedUser) {
       try {
         const parsed = JSON.parse(savedUser);
         if (parsed && parsed.id && parsed.role !== 'guest') {
+          if (legacyNameMap[parsed.fullname]) {
+            parsed.fullname = legacyNameMap[parsed.fullname];
+          }
           this.currentUser = parsed;
+          this.saveSession();
         } else {
           this.currentUser = null;
         }
@@ -530,12 +557,128 @@ const AgriAuth = {
   },
 
   viewCurrentProfile() {
-    const user = this.currentUser;
-    if (user && window.AgriAdmin) {
-      AgriAdmin.viewUserProfile(user.id);
-    } else {
+    const user = this.currentUser || this.defaultUsers[0];
+    if (!user) {
       this.openLoginModal('standard');
+      return;
     }
+
+    const modal = document.getElementById('modal-auth-user-profile');
+    if (!modal) return;
+
+    const initial = (user.fullname || user.username || 'G').charAt(0).toUpperCase();
+    const avatarEl = document.getElementById('profile-modal-avatar');
+    if (avatarEl) avatarEl.textContent = initial;
+
+    const roleSubEl = document.getElementById('profile-modal-role-sub');
+    if (roleSubEl) roleSubEl.textContent = user.roleName || 'Cán bộ HTX';
+
+    const usernameEl = document.getElementById('profile-modal-username');
+    if (usernameEl) usernameEl.value = '@' + (user.username || '');
+
+    const roleNameEl = document.getElementById('profile-modal-role-name');
+    if (roleNameEl) roleNameEl.value = user.roleName || '';
+
+    const fullnameEl = document.getElementById('profile-modal-fullname');
+    if (fullnameEl) fullnameEl.value = user.fullname || '';
+
+    const phoneEl = document.getElementById('profile-modal-phone');
+    if (phoneEl) phoneEl.value = user.phone || '';
+
+    const emailEl = document.getElementById('profile-modal-email');
+    if (emailEl) emailEl.value = user.email || '';
+
+    const addressEl = document.getElementById('profile-modal-address');
+    if (addressEl) addressEl.value = user.dia_chi || '';
+
+    const noteEl = document.getElementById('profile-modal-note');
+    if (noteEl) noteEl.value = user.ghi_chu || '';
+
+    const alertEl = document.getElementById('profile-modal-alert');
+    if (alertEl) alertEl.style.display = 'none';
+
+    modal.classList.add('open');
+    if (window.lucide) lucide.createIcons();
+  },
+
+  closeProfileModal() {
+    const modal = document.getElementById('modal-auth-user-profile');
+    if (modal) modal.classList.remove('open');
+  },
+
+  saveProfileChanges() {
+    const user = this.currentUser || this.defaultUsers[0];
+    if (!user) return;
+
+    const fullname = document.getElementById('profile-modal-fullname')?.value.trim();
+    const phone = document.getElementById('profile-modal-phone')?.value.trim();
+    const email = document.getElementById('profile-modal-email')?.value.trim();
+    const address = document.getElementById('profile-modal-address')?.value.trim();
+    const note = document.getElementById('profile-modal-note')?.value.trim();
+    const alertEl = document.getElementById('profile-modal-alert');
+
+    if (!fullname) {
+      if (alertEl) {
+        alertEl.textContent = 'Họ và tên cán bộ không được để trống!';
+        alertEl.style.background = 'rgba(239, 68, 68, 0.1)';
+        alertEl.style.color = '#ef4444';
+        alertEl.style.display = 'block';
+      }
+      return;
+    }
+
+    user.fullname = fullname;
+    user.phone = phone;
+    user.email = email;
+    user.dia_chi = address;
+    user.ghi_chu = note;
+
+    // Update in users array
+    const targetIdx = this.users.findIndex(u => u.id === user.id);
+    if (targetIdx !== -1) {
+      this.users[targetIdx] = user;
+    }
+    this.saveUsers();
+    this.saveSession();
+    this.updateUserUI();
+
+    this.logActivity('CẬP_NHẬT_HỒ_SƠ', `Cán bộ ${user.fullname} đã cập nhật thông tin hồ sơ.`);
+
+    if (alertEl) {
+      alertEl.textContent = '✅ Đã lưu cập nhật hồ sơ cán bộ thành công!';
+      alertEl.style.background = 'rgba(5, 150, 105, 0.1)';
+      alertEl.style.color = 'var(--primary)';
+      alertEl.style.display = 'block';
+    }
+
+    setTimeout(() => {
+      this.closeProfileModal();
+      if (window.AgriSync) {
+        AgriSync.showLiveToast('Đã lưu hồ sơ cán bộ thành công!');
+      }
+    }, 800);
+  },
+
+  openChangePasswordModal() {
+    const modal = document.getElementById('modal-auth-change-password');
+    if (!modal) return;
+    const oldPin = document.getElementById('auth-change-old-pin');
+    const newPin = document.getElementById('auth-change-new-pin');
+    const confirmPin = document.getElementById('auth-change-confirm-pin');
+    const errorEl = document.getElementById('auth-change-error');
+    const successEl = document.getElementById('auth-change-success');
+    if (oldPin) oldPin.value = '';
+    if (newPin) newPin.value = '';
+    if (confirmPin) confirmPin.value = '';
+    if (errorEl) errorEl.style.display = 'none';
+    if (successEl) successEl.style.display = 'none';
+    modal.classList.add('open');
+    if (window.lucide) lucide.createIcons();
+  },
+
+  closeChangePasswordModal() {
+    const modal = document.getElementById('modal-auth-change-password');
+    if (modal) modal.classList.remove('open');
   },
 
   logout() {
