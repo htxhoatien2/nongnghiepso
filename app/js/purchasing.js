@@ -350,6 +350,32 @@ const AgriPurchasing = {
     }, 150);
   },
 
+  openNewSessionModalWithPlot(plotId) {
+    const allPlots = AgriData.getPlots();
+    const plot = allPlots.find(p => String(p.id) === String(plotId) || String(p.stt) === String(plotId));
+    
+    this.openNewSessionModal(false, {
+      xu_dong: plot ? plot.xu_dong : 'La Châu'
+    });
+
+    if (plot) {
+      setTimeout(() => {
+        const nameInput = document.getElementById('weighing-farmer-input');
+        const addrInput = document.getElementById('weighing-farmer-address');
+        const phoneInput = document.getElementById('weighing-farmer-phone');
+        const noteInput = document.getElementById('weighing-note-input');
+
+        if (nameInput) nameInput.value = plot.ho_sx || plot.chu_ruong || '';
+        if (addrInput) addrInput.value = plot.dia_chi || 'Xã Hòa Tiến';
+        if (phoneInput) phoneInput.value = plot.dien_thoai || '';
+        if (noteInput) noteInput.value = `Thửa #${plot.stt} (${plot.xu_dong}) - DT: ${plot.tong_dt}m²`;
+
+        this.populateZoneSelect(plot.xu_dong, [plot.id]);
+        this.recalculateSession();
+      }, 100);
+    }
+  },
+
   openEditSessionModal(sessionId) {
     const session = AgriData.getPurchasingSession(sessionId);
     if (!session) return;

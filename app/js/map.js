@@ -11,12 +11,14 @@ const AgriMap = {
   geoJsonLayer: null,
   landmarksLayer: null,
   zoneLabelsLayer: null,
+  parcelsLayer: null,
   baseLayers: {},
   currentBaseLayerName: 'google_hybrid',
   selectedFeature: null,
   selectedLayer: null,
   showLandmarks: true,
   showZoneLabels: true,
+  showParcelLabels: true,
   
   // Drawing State
   drawMode: null, // 'polygon' | 'measure_distance' | 'measure_area' | 'edit' | null
@@ -183,9 +185,10 @@ const AgriMap = {
     // 4. Render Agricultural Zones GeoJSON
     this.renderGeoJSON();
 
-    // 5. Render Important Landmarks & Permanent Zone Labels
+    // 5. Render Important Landmarks & Permanent Zone Labels & Parcels Layer
     this.landmarksLayer = L.layerGroup().addTo(this.map);
     this.zoneLabelsLayer = L.layerGroup().addTo(this.map);
+    this.parcelsLayer = L.layerGroup().addTo(this.map);
     this.renderLandmarks();
     this.renderZoneLabels();
 
@@ -204,7 +207,7 @@ const AgriMap = {
       if (this.map) this.map.invalidateSize(true);
     });
 
-    console.log('AgriMap initialized successfully with Google Hybrid & Landmarks.');
+    console.log('AgriMap initialized successfully with Google Hybrid & Landmarks & Parcels Layer.');
   },
 
   // =========================================================================
@@ -221,22 +224,23 @@ const AgriMap = {
     const area = feature.properties.tong_dt || 0;
     return {
       fillColor: AgriMap.getZoneColor(area),
-      weight: 2,
-      opacity: 0.95,
+      weight: 1.5,
+      opacity: 0.85,
       color: '#ffffff',
       dashArray: '2',
-      fillOpacity: 0.55
+      fillOpacity: 0.30
     };
   },
 
-  highlightStyle() {
+  highlightStyle(feature) {
+    const area = feature?.properties?.tong_dt || 0;
     return {
-      fillColor: '#10b981',
+      fillColor: AgriMap.getZoneColor(area),
       weight: 3,
       opacity: 1,
-      color: '#facc15',
-      dashArray: '',
-      fillOpacity: 0.85
+      color: '#facc15', // Viền vàng nổi bật sắc nét
+      dashArray: '4, 4',
+      fillOpacity: 0.12 // Màu mờ trong suốt (0.12) để hiện rõ ranh giới thửa bên trong!
     };
   },
 
@@ -276,12 +280,16 @@ const AgriMap = {
         layer.on({
           mouseover: () => {
             if (this.selectedFeature !== feature && !this.drawMode) {
-              layer.setStyle({ fillOpacity: 0.75, weight: 3 });
+              layer.setStyle({ fillOpacity: 0.55, weight: 2.5 });
             }
           },
           mouseout: () => {
             if (this.selectedFeature !== feature && !this.drawMode) {
-              this.geoJsonLayer.resetStyle(layer);
+              if (this.selectedFeature) {
+                layer.setStyle({ fillOpacity: 0.08, opacity: 0.35, weight: 1 });
+              } else {
+                this.geoJsonLayer.resetStyle(layer);
+              }
             }
           },
           click: (e) => {
@@ -298,15 +306,166 @@ const AgriMap = {
     this.selectedFeature = feature;
     this.selectedLayer = layer;
 
-    // Reset styles and highlight active
-    this.geoJsonLayer.eachLayer(l => this.geoJsonLayer.resetStyle(l));
+    // Reset all layers: make unselected zones subtle/dimmed
+    this.geoJsonLayer.eachLayer(l => {
+      this.geoJsonLayer.resetStyle(l);
+      l.setStyle({ fillOpacity: 0.08, opacity: 0.35, weight: 1 });
+    });
+
     if (layer) {
-      layer.setStyle(this.highlightStyle());
+      // Selected zone: transparent fill to reveal parcel boundaries and satellite imagery
+      layer.setStyle(this.highlightStyle(feature));
       layer.bringToFront();
       this.map.fitBounds(layer.getBounds(), { maxZoom: 17, padding: [40, 40] });
     }
 
+    // Render Sub-parcels & Farmer Name Badges
+    this.renderParcelsForZone(feature.properties.name, feature);
+
     this.showBottomSheet(feature.properties);
+  },
+
+  renderParcelsForZone(zoneName, zoneFeature) {
+    if (!this.parcelsLayer) return;
+    this.parcelsLayer.clearLayers();
+
+    if (!this.showParcelLabels || !zoneFeature) return;
+
+    let plots = AgriData.findPlotsByZone(zoneName);
+    if (!plots || plots.length === 0) {
+      const norm = (zoneName || '').toLowerCase().trim();
+      plots = (AgriData.getPlots() || []).filter(p => (p.xu_dong || '').toLowerCase().trim().includes(norm));
+    }
+    if (!plots || plots.length === 0) return;
+
+    const geom = zoneFeature.geometry;
+    const coords = geom.type === 'MultiPolygon' ? geom.coordinates[0][0] : geom.coordinates[0];
+    if (!Array.isArray(coords) || coords.length === 0) return;
+
+    let minLng = Infinity, maxLng = -Infinity, minLat = Infinity, maxLat = -Infinity;
+    coords.forEach(c => {
+      if (c[0] < minLng) minLng = c[0];
+      if (c[0] > maxLng) maxLng = c[0];
+      if (c[1] < minLat) minLat = c[1];
+      if (c[1] > maxLat) maxLat = c[1];
+    });
+
+    const widthLng = maxLng - minLng;
+    const heightLat = maxLat - minLat;
+    const N = plots.length;
+
+    const cols = Math.max(1, Math.ceil(Math.sqrt(N * (widthLng / (heightLat * 1.35)))));
+    const rows = Math.max(1, Math.ceil(N / cols));
+    const cellW = widthLng / cols;
+    const cellH = heightLat / rows;
+
+    plots.forEach((p, idx) => {
+      const col = idx % cols;
+      const row = Math.floor(idx / cols);
+
+      const pMinLng = minLng + col * cellW + cellW * 0.04;
+      const pMaxLng = minLng + (col + 1) * cellW - cellW * 0.04;
+      const pMinLat = maxLat - (row + 1) * cellH + cellH * 0.04;
+      const pMaxLat = maxLat - row * cellH - cellH * 0.04;
+
+      const centerLat = (pMinLat + pMaxLat) / 2;
+      const centerLng = (pMinLng + pMaxLng) / 2;
+
+      const parcelPolyCoords = [
+        [pMinLat, pMinLng],
+        [pMinLat, pMaxLng],
+        [pMaxLat, pMaxLng],
+        [pMaxLat, pMinLng]
+      ];
+
+      const isRented = Boolean(p.is_rented);
+      const strokeColor = isRented ? '#f59e0b' : '#10b981';
+      const fillColor = isRented ? '#fbbf24' : '#34d399';
+
+      // 1. Sub-parcel boundary polygon (Ranh giới thửa ruộng)
+      const parcelPoly = L.polygon(parcelPolyCoords, {
+        color: strokeColor,
+        weight: 1.2,
+        dashArray: '3, 2',
+        fillColor: fillColor,
+        fillOpacity: 0.16
+      });
+
+      parcelPoly.on({
+        mouseover: () => {
+          parcelPoly.setStyle({ fillOpacity: 0.45, weight: 2.5, color: '#facc15' });
+        },
+        mouseout: () => {
+          parcelPoly.setStyle({ fillOpacity: 0.16, weight: 1.2, color: strokeColor });
+        }
+      });
+
+      // 2. Farmer Name & Parcel Badge Marker (divIcon with small icon & font)
+      const badgeHtml = `
+        <div class="parcel-name-badge ${isRented ? 'rented' : 'owner'}" title="Thửa #${p.stt}: ${p.ho_sx} (${p.tong_dt}m²)">
+          <span class="p-icon">🌾</span>
+          <span class="p-stt">#${p.stt}</span>
+          <span class="p-name">${p.ho_sx || 'Hộ SX'}</span>
+          <span class="p-area">${p.tong_dt || 0}m²</span>
+        </div>
+      `;
+
+      const badgeIcon = L.divIcon({
+        className: 'parcel-div-marker',
+        html: badgeHtml,
+        iconSize: [110, 24],
+        iconAnchor: [55, 12]
+      });
+
+      const badgeMarker = L.marker([centerLat, centerLng], { icon: badgeIcon });
+
+      // 3. Rich Popup Card for parcel
+      const popupHtml = `
+        <div class="parcel-popup-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; border-bottom: 1px solid var(--border-color, #e2e8f0); padding-bottom: 4px;">
+            <span style="font-size: 11px; font-weight: 800; color: #059669; text-transform: uppercase;">🌾 THỬA #${p.stt} • ${p.xu_dong}</span>
+            <span class="badge ${isRented ? 'badge-warning' : 'badge-emerald'}" style="font-size: 10px; padding: 2px 5px;">${isRented ? 'Đất Thuê / Tích Tụ' : 'Đất Chính Chủ'}</span>
+          </div>
+          <div style="font-size: 13px; font-weight: 800; color: #0f172a; margin-bottom: 2px;">
+            👨‍🌾 Hộ Sản Xuất: ${p.ho_sx}
+          </div>
+          <div style="font-size: 11px; color: #64748b; margin-bottom: 6px;">
+            🏠 Chủ ruộng gốc: <strong>${p.chu_ruong}</strong> (${p.dia_chi || 'Xã Hòa Tiến'})
+          </div>
+          <div style="background: rgba(16, 185, 129, 0.08); border-radius: 6px; padding: 6px 8px; margin-bottom: 8px; font-size: 11px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
+            <div>📐 Diện tích: <strong>${p.tong_dt} m²</strong></div>
+            <div>🌾 Sào T.Bộ: <strong>${(p.tong_dt / 500).toFixed(1)} sào</strong></div>
+            <div>🏷️ Quỹ 1 (5%): <strong>${p.quy_1 || 0} m²</strong></div>
+            <div>🏷️ Quỹ 2: <strong>${p.quy_2 || 0} m²</strong></div>
+          </div>
+          <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+            <button class="btn btn-sm btn-emerald" style="flex: 1; padding: 5px 6px; font-size: 11px; font-weight: 700;" onclick="App.switchTab('tab-purchasing'); if(window.AgriPurchasing) AgriPurchasing.openNewSessionModalWithPlot('${p.id}');">
+              ⚖️ Cân Lúa Thửa Này
+            </button>
+            ${p.dien_thoai ? `
+              <a href="tel:${p.dien_thoai}" class="btn btn-sm btn-outline" style="padding: 5px 8px; font-size: 11px; color: #0284c7; text-decoration: none; display: inline-flex; align-items: center; gap: 2px;">
+                📞 Gọi Hộ SX
+              </a>
+            ` : ''}
+          </div>
+        </div>
+      `;
+
+      parcelPoly.bindPopup(popupHtml, { maxWidth: 280 });
+      badgeMarker.bindPopup(popupHtml, { maxWidth: 280 });
+
+      this.parcelsLayer.addLayer(parcelPoly);
+      this.parcelsLayer.addLayer(badgeMarker);
+    });
+  },
+
+  toggleParcelLabels(show) {
+    this.showParcelLabels = show;
+    if (!show) {
+      if (this.parcelsLayer) this.parcelsLayer.clearLayers();
+    } else if (this.selectedFeature) {
+      this.renderParcelsForZone(this.selectedFeature.properties.name, this.selectedFeature);
+    }
   },
 
   flyToZone(zoneName) {
@@ -691,6 +850,9 @@ const AgriMap = {
     if (sheet) sheet.classList.remove('open');
     if (this.geoJsonLayer) {
       this.geoJsonLayer.eachLayer(l => this.geoJsonLayer.resetStyle(l));
+    }
+    if (this.parcelsLayer) {
+      this.parcelsLayer.clearLayers();
     }
     this.selectedFeature = null;
     this.selectedLayer = null;

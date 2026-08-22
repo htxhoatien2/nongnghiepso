@@ -850,6 +850,101 @@ body.dark-mode .zone-name-tag span {
   border-color: rgba(255, 255, 255, 0.2);
 }
 
+/* ========================================================================= */
+/* SUB-PARCEL BOUNDARY & FARMER NAME BADGE (RANH GIỚI THỬA & TÊN HỘ SẢN XUẤT) */
+/* ========================================================================= */
+.parcel-div-marker {
+  background: transparent;
+  border: none;
+  pointer-events: auto;
+}
+
+.parcel-name-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: #0f172a;
+  padding: 2px 6px;
+  border-radius: 6px;
+  border: 1px solid rgba(16, 185, 129, 0.45);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  z-index: 500;
+}
+
+.parcel-name-badge:hover {
+  transform: translate(-50%, -50%) scale(1.12);
+  z-index: 1000 !important;
+  background: #ffffff;
+  border-color: #f59e0b;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.parcel-name-badge .p-icon {
+  font-size: 10px;
+  line-height: 1;
+}
+
+.parcel-name-badge .p-stt {
+  background: #059669;
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.parcel-name-badge.rented .p-stt {
+  background: #d97706;
+}
+
+.parcel-name-badge .p-name {
+  color: #1e293b;
+  font-weight: 700;
+  max-width: 95px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.parcel-name-badge .p-area {
+  color: #64748b;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+body.dark-mode .parcel-name-badge {
+  background: rgba(15, 23, 42, 0.92);
+  color: #f8fafc;
+  border-color: rgba(16, 185, 129, 0.5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-mode .parcel-name-badge .p-name {
+  color: #f1f5f9;
+}
+
+body.dark-mode .parcel-name-badge .p-area {
+  color: #94a3b8;
+}
+
+/* Custom Parcel Popup styling */
+.parcel-popup-card {
+  font-family: inherit;
+  min-width: 250px;
+  padding: 4px;
+}
+
 /* Google Navigation Button in Sheet */
 .btn-google-nav {
   transition: all 0.2s ease;
