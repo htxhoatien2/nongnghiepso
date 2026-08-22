@@ -555,12 +555,30 @@ const AgriAdmin = {
       return;
     }
 
+    const targetUsername = u.username;
+    const targetEmail = (u.email || '').toLowerCase();
+    const targetPhone = u.phone || '';
+
+    // 1. Remove from active users
     AgriAuth.users = AgriAuth.users.filter(x => x.id !== userId);
     AgriAuth.saveUsers();
+
+    // 2. Remove from pending registrations queue
+    AgriAuth.loadPendingUsers();
+    AgriAuth.pendingUsers = (AgriAuth.pendingUsers || []).filter(p => 
+      p.id !== userId && 
+      p.username !== targetUsername && 
+      (!targetEmail || (p.email || '').toLowerCase() !== targetEmail) &&
+      (!targetPhone || p.phone !== targetPhone)
+    );
+    AgriAuth.savePendingUsers();
+
     AgriAuth.logActivity('XÓA THÀNH VIÊN', `Xóa tài khoản thành viên ${u.fullname} (@${u.username})`);
     this.render();
+    this.updatePendingCountBadges();
+
     if (window.AgriSync) {
-      AgriSync.showLiveToast(`Đã xóa thành viên: ${u.fullname}`);
+      AgriSync.showLiveToast(`Đã xóa tài khoản và hồ sơ của: ${u.fullname}`);
     }
   },
 

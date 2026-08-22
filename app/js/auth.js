@@ -1473,32 +1473,17 @@ const AgriAuth = {
     this.loadUsers();
     this.loadPendingUsers();
 
-    // Check duplicate in active users (excluding placeholder default admin)
+    // Check duplicate in active users (only block if user is currently active in the system)
     const existingActive = this.users.find(u => 
-      u.id !== 'usr_001' && (
+      u.id !== 'usr_001' && u.active && u.status === 'active' && (
         (u.email && u.email.toLowerCase() === email) || 
         (u.phone && u.phone === phone) ||
-        (u.username && u.username === username)
+        (u.username && u.username.toLowerCase() === username.toLowerCase())
       )
     );
     if (existingActive) {
       if (errorEl) {
-        errorEl.textContent = `Email (${email}) hoặc SĐT (${phone}) đã có tài khoản trên hệ thống! Vui lòng đăng nhập.`;
-        errorEl.style.display = 'block';
-      }
-      return;
-    }
-
-    // Check duplicate in pending queue
-    const existingPending = this.pendingUsers.find(u =>
-      u.status === 'pending_approval' && (
-        (u.email && u.email.toLowerCase() === email) || 
-        (u.phone && u.phone === phone)
-      )
-    );
-    if (existingPending) {
-      if (errorEl) {
-        errorEl.textContent = `Hồ sơ (${email}) đã đăng ký và đang chờ Ban Giám Đốc HTX xét duyệt. Vui lòng liên hệ Hotline: 0916199945 để kích hoạt sớm!`;
+        errorEl.textContent = `Email (${email}) hoặc SĐT (${phone}) đã có tài khoản chính thức đang hoạt động trên hệ thống! Vui lòng đăng nhập.`;
         errorEl.style.display = 'block';
       }
       return;
@@ -1539,9 +1524,13 @@ const AgriAuth = {
 
     if (errorEl) errorEl.style.display = 'none';
 
-    // Save IMMEDIATELY into pending queue so Admin can see the registration right away
+    // Save or Update IMMEDIATELY into pending queue
     this.loadPendingUsers();
-    const existIdx = this.pendingUsers.findIndex(u => u.email && u.email.toLowerCase() === email);
+    const existIdx = this.pendingUsers.findIndex(u => 
+      (u.email && u.email.toLowerCase() === email) ||
+      (u.username && u.username.toLowerCase() === username) ||
+      (u.phone && u.phone === phone)
+    );
     if (existIdx >= 0) {
       this.pendingUsers[existIdx] = tempUserData;
     } else {
