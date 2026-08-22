@@ -16,8 +16,8 @@ const AgriPurchasing = {
   selectedSession: null,
   lastCopiedZaloText: '',
   lastContext: {
-    can_bo_can: 'Phan Văn Hùng',
-    xe_nhan: 'Xe A (43C-089.12)',
+    can_bo_can: '',
+    xe_nhan: '',
     xu_dong: 'La Châu',
     loai_giong: 'J02',
     don_gia_kg: 8500
@@ -317,9 +317,10 @@ const AgriPurchasing = {
     document.getElementById('weighing-note-input').value = '';
     
     // Context retention (giữ cán bộ cân, xe nhận, xứ đồng, giống lúa để cân liên tục)
-    const ctx = Object.assign({}, this.lastContext, prevContext);
-    document.getElementById('weighing-officer-input').value = ctx.can_bo_can || 'Phan Văn Hùng';
-    document.getElementById('weighing-truck-input').value = ctx.xe_nhan || 'Xe A (43C-089.12)';
+    const loggedInOfficer = (typeof AgriAuth !== 'undefined' && AgriAuth.currentUser) ? AgriAuth.currentUser.fullname : '';
+    const ctx = Object.assign({}, this.lastContext, { can_bo_can: this.lastContext.can_bo_can || loggedInOfficer }, prevContext);
+    document.getElementById('weighing-officer-input').value = ctx.can_bo_can || '';
+    document.getElementById('weighing-truck-input').value = ctx.xe_nhan || '';
 
     this.populateZoneSelect(ctx.xu_dong || 'La Châu', []);
 
