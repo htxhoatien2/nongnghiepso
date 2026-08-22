@@ -809,53 +809,92 @@ const AgriAuth = {
 
   syncSupabaseUserToLocal(sbUser) {
     if (!sbUser) return;
+    this.loadUsers();
+    this.loadPendingUsers();
+
     const meta = sbUser.user_metadata || {};
-    const email = sbUser.email || '';
-    const fullname = meta.full_name || meta.fullname || meta.name || email.split('@')[0] || 'Cán bộ HTX';
+    const email = (sbUser.email || '').toLowerCase();
     const username = meta.user_name || meta.username || email.split('@')[0] || 'canbo';
-    const role = meta.role || 'farmer';
-    const roleMap = {
-      'director': '👑 Ban Giám Đốc HTX',
-      'accountant': '💰 Kế Toán / Thủ Quỹ',
-      'cadastre': '🗺️ Cán Bộ Địa Chính GIS',
-      'weighing_staff': '⚖️ Cán Bộ Cân Thu Mua',
-      'village_head': '🏘️ Trưởng Thôn / Tổ Dân Phố',
-      'farmer': '👨‍🌾 Hộ Nông Dân / Xã Viên'
-    };
-    const roleName = roleMap[role] || meta.roleName || '👨‍🌾 Thành Viên HTX';
 
-    const localUser = {
-      id: sbUser.id,
-      supabase_id: sbUser.id,
-      username,
-      email,
-      fullname,
-      role,
-      roleName,
-      phone: meta.phone || meta.dien_thoai || '',
-      cccd: meta.cccd || '',
-      to_dan_pho: meta.to_dan_pho || 'Tất cả các tổ',
-      dia_chi: meta.dia_chi || 'Xã Hòa Tiến, Hòa Vang, Đà Nẵng',
-      active: true,
-      auth_provider: sbUser.app_metadata?.provider || 'supabase'
-    };
+    // 1. Check if user is Super Admin
+    const isSuperAdmin = (email === 'giamdoc.htxhoatien2@gmail.com') || (username === 'giamdoc') || (this.currentUser && this.currentUser.role === 'director');
 
-    // Merge into local users array if not exists
-    const idx = this.users.findIndex(u => u.id === localUser.id || (u.email && u.email.toLowerCase() === localUser.email.toLowerCase()) || u.username === localUser.username);
-    if (idx >= 0) {
-      this.users[idx] = { ...this.users[idx], ...localUser };
-    } else {
-      this.users.unshift(localUser);
+    // 2. Check if user is already an approved active user in this.users
+    const existingApprovedUser = this.users.find(u =>
+      (u.email && u.email.toLowerCase() === email) ||
+      (u.username && u.username.toLowerCase() === username) ||
+      (u.id === sbUser.id)
+    );
+
+    if (!isSuperAdmin && (!existingApprovedUser || existingApprovedUser.status !== 'active')) {
+      console.warn('⏳ [AgriGIS Auth] Tài khoản đã xác thực Email nhưng CHƯA ĐƯỢC ADMIN DUYỆT:', email);
+      
+      // Auto-enroll in pending approval queue if not already there
+      const inPending = this.pendingUsers.some(u => 
+        (u.email && u.email.toLowerCase() === email) ||
+        (u.username && u.username.toLowerCase() === username)
+      );
+
+      if (!inPending) {
+        const role = meta.role || 'farmer';
+        const roleNames = {
+          director: '👑 Ban Giám Đốc HTX',
+          accountant: '💰 Bộ Phận Kế Toán - Thủ Quỹ',
+          cadastre: '🗺️ Cán Bộ Địa Chính GIS',
+          weighing_staff: '⚖️ Cán Bộ Cân Thu Mua',
+          village_head: '🏘️ Ban Điều Hành Tổ Dân Phố',
+          farmer: '👨‍🌾 Hộ Nông Dân / Xã Viên'
+        };
+        const tempUserData = {
+          id: 'reg_' + Date.now(),
+          username,
+          pin: '1234',
+          fullname: meta.full_name || meta.fullname || email.split('@')[0],
+          email,
+          phone: meta.phone || '',
+          cccd: meta.cccd || 'Chưa cập nhật',
+          ngay_sinh: '1990-01-01',
+          gioi_tinh: 'Nam',
+          dia_chi: meta.dia_chi || 'Xã Hòa Tiến, Hòa Vang, Đà Nẵng',
+          to_dan_pho: meta.to_dan_pho || 'Tổ 1',
+          requested_role: role,
+          requested_role_name: roleNames[role] || '👨‍🌾 Hộ Nông Dân / Xã Viên',
+          requested_zones: ['Tất cả các xứ đồng'],
+          email_verified: true,
+          status: 'pending_approval',
+          created_at: new Date().toISOString().replace('T', ' ').slice(0, 19),
+          note: 'Đã xác thực Email Supabase'
+        };
+        this.pendingUsers.unshift(tempUserData);
+        this.savePendingUsers();
+        if (window.AgriAdmin && AgriAdmin.renderPendingApprovalsTable) {
+          AgriAdmin.renderPendingApprovalsTable();
+        }
+      }
+
+      // Deny immediate login session: force sign out
+      try {
+        const supabase = this.getSupabase();
+        if (supabase && supabase.auth) {
+          supabase.auth.signOut().catch(() => {});
+        }
+      } catch (e) {}
+
+      this.currentUser = null;
+      localStorage.removeItem('agrigis_current_user');
+      this.updateUserUI();
+      this.applyRoleRestrictions();
+      return;
     }
-    this.saveUsers();
 
-    this.currentUser = localUser;
+    // Approved user -> log in successfully
+    this.currentUser = existingApprovedUser || this.defaultUsers[0];
     this.saveSession();
     this.updateUserUI();
     this.applyRoleRestrictions();
 
     if (window.AgriSync) {
-      AgriSync.showLiveToast(`Đã xác thực Supabase: ${localUser.fullname} (${localUser.roleName})`);
+      AgriSync.showLiveToast(`Đã đăng nhập: ${this.currentUser.fullname} (${this.currentUser.roleName})`);
     }
   },
 
@@ -864,6 +903,28 @@ const AgriAuth = {
     const supabase = this.getSupabase();
     if (!supabase) return { success: false, message: 'Supabase client chưa sẵn sàng!' };
     try {
+      this.loadUsers();
+      this.loadPendingUsers();
+
+      // Check if user is approved before allowing sign in
+      const isSuperAdminEmail = email.toLowerCase() === 'giamdoc.htxhoatien2@gmail.com';
+      const isApproved = this.users.some(u => u.email && u.email.toLowerCase() === email.toLowerCase() && u.status === 'active');
+      const isPending = this.pendingUsers.some(u => u.status === 'pending_approval' && u.email && u.email.toLowerCase() === email.toLowerCase());
+
+      if (isPending) {
+        return {
+          success: false,
+          message: '⏳ Hồ sơ của bạn đã xác thực email thành công nhưng đang chờ Ban Giám Đốc HTX xét duyệt & cấp quyền! Vui lòng liên hệ Hotline: 0916199945 để kích hoạt sớm.'
+        };
+      }
+
+      if (!isApproved && !isSuperAdminEmail) {
+        return {
+          success: false,
+          message: '⏳ Tài khoản này chưa được Ban Giám Đốc HTX phê duyệt và cấp quyền vào hệ thống!'
+        };
+      }
+
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       if (data && data.user) {
@@ -1593,19 +1654,32 @@ const AgriAuth = {
     this.pendingUsers.unshift(userData);
     this.savePendingUsers();
 
-    this.logActivity('ĐĂNG_KÝ_MỚI', `Tài khoản ${userData.fullname} (@${userData.username}) đăng ký và đã xác thực Email ${userData.email}`);
+    this.logActivity('ĐĂNG_KÝ_MỚI', `Tài khoản ${userData.fullname} (@${userData.username}) đăng ký và đã xác thực Email ${userData.email} (Chờ duyệt)`);
+
+    // Reset current user so no accidental login occurs
+    this.currentUser = null;
+    localStorage.removeItem('agrigis_current_user');
+    this.updateUserUI();
+    this.applyRoleRestrictions();
 
     this.closeOtpModal();
 
+    // Clear form inputs
+    const formInputs = ['home-reg-fullname', 'home-reg-username', 'home-reg-email', 'home-reg-phone', 'home-reg-pin', 'home-reg-pin-confirm', 'auth-reg-fullname', 'auth-reg-email', 'auth-reg-phone', 'auth-reg-pin', 'auth-reg-note'];
+    formInputs.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+
     // Show congratulations modal or alert
-    alert(`🎉 XÁC THỰC EMAIL THÀNH CÔNG!\n\nKính chào ông/bà ${userData.fullname},\nHồ sơ đăng ký của bạn đã được tiếp nhận và chuyển đến Ban Giám Đốc HTX DVSX KDTH HÒA TIẾN 2 để thẩm định, phân quyền và kích hoạt tài khoản.\n\nSau khi Ban Giám Đốc phê duyệt, bạn có thể đăng nhập bằng tài khoản @${userData.username} hoặc số điện thoại ${userData.phone}.\n\nHotline hỗ trợ kỹ thuật: 0916199945 (Phạm Công Tuân)`);
+    alert(`🎉 XÁC THỰC EMAIL THÀNH CÔNG!\n\nKính chào ông/bà ${userData.fullname},\n\nHồ sơ đăng ký của bạn đã được tiếp nhận và chuyển đến Ban Giám Đốc HTX DVSX KDTH HÒA TIẾN 2 để thẩm định, phân quyền và kích hoạt tài khoản.\n\n⚠️ LƯU Ý QUAN TRỌNG: Bạn cần chờ Ban Giám Đốc HTX PHÊ DUYỆT & CẤP QUYỀN trước khi có thể đăng nhập vào hệ thống.\n\nSau khi Ban Giám Đốc phê duyệt, hệ thống sẽ gửi Email thông báo kích hoạt và bạn có thể đăng nhập ngay bằng Email/SĐT.\n\nHotline hỗ trợ kỹ thuật: 0916199945 (Phạm Công Tuân)`);
 
     if (window.AgriSync) {
-      AgriSync.showLiveToast(`Hồ sơ mới của ${userData.fullname} đang chờ Ban Giám Đốc phê duyệt!`);
+      AgriSync.showLiveToast(`Hồ sơ của ${userData.fullname} đã gửi thành công, đang chờ Ban Giám Đốc duyệt!`);
     }
 
-    if (window.AgriAdmin && AgriAdmin.render) {
-      AgriAdmin.render();
+    if (window.AgriAdmin && AgriAdmin.renderPendingApprovalsTable) {
+      AgriAdmin.renderPendingApprovalsTable();
     }
   },
 
