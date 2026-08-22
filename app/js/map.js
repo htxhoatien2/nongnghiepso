@@ -236,11 +236,11 @@ const AgriMap = {
     const area = feature?.properties?.tong_dt || 0;
     return {
       fillColor: AgriMap.getZoneColor(area),
-      weight: 3,
+      weight: 2.5,
       opacity: 1,
       color: '#facc15', // Viền vàng nổi bật sắc nét
       dashArray: '4, 4',
-      fillOpacity: 0.12 // Màu mờ trong suốt (0.12) để hiện rõ ranh giới thửa bên trong!
+      fillOpacity: 0.05 // Trong suốt để lộ 100% nền ảnh vệ tinh tự nhiên
     };
   },
 
@@ -379,28 +379,8 @@ const AgriMap = {
       ];
 
       const isRented = Boolean(p.is_rented);
-      const strokeColor = isRented ? '#f59e0b' : '#10b981';
-      const fillColor = isRented ? '#fbbf24' : '#34d399';
 
-      // 1. Sub-parcel boundary polygon (Ranh giới thửa ruộng)
-      const parcelPoly = L.polygon(parcelPolyCoords, {
-        color: strokeColor,
-        weight: 1.2,
-        dashArray: '3, 2',
-        fillColor: fillColor,
-        fillOpacity: 0.16
-      });
-
-      parcelPoly.on({
-        mouseover: () => {
-          parcelPoly.setStyle({ fillOpacity: 0.45, weight: 2.5, color: '#facc15' });
-        },
-        mouseout: () => {
-          parcelPoly.setStyle({ fillOpacity: 0.16, weight: 1.2, color: strokeColor });
-        }
-      });
-
-      // 2. Farmer Name & Parcel Badge Marker (Chỉ hiển thị icon nhỏ, hover để xem tên hộ SX)
+      // Farmer Name & Parcel Badge Marker (Chỉ hiển thị icon nhỏ, hover để xem tên hộ SX)
       const badgeHtml = `
         <div class="parcel-name-badge ${isRented ? 'rented' : 'owner'}" title="Thửa #${p.stt}: ${p.ho_sx} (${p.tong_dt}m²)">
           <span class="p-icon">🌾</span>
@@ -421,7 +401,7 @@ const AgriMap = {
 
       const badgeMarker = L.marker([centerLat, centerLng], { icon: badgeIcon });
 
-      // 3. Rich Popup Card for parcel
+      // Rich Popup Card for parcel
       const popupHtml = `
         <div class="parcel-popup-card">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; border-bottom: 1px solid var(--border-color, #e2e8f0); padding-bottom: 4px;">
@@ -453,10 +433,7 @@ const AgriMap = {
         </div>
       `;
 
-      parcelPoly.bindPopup(popupHtml, { maxWidth: 280 });
       badgeMarker.bindPopup(popupHtml, { maxWidth: 280 });
-
-      this.parcelsLayer.addLayer(parcelPoly);
       this.parcelsLayer.addLayer(badgeMarker);
     });
   },
