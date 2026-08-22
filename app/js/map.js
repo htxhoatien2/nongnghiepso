@@ -501,11 +501,22 @@ const AgriMap = {
 
     this.currentZoneProps = props;
 
-    // Header info
+    // Header info & Clean location text (remove 'nan')
     const titleEl = document.getElementById('sheet-title');
     const subEl = document.getElementById('sheet-subtitle');
-    if (titleEl) titleEl.textContent = props.name || 'Xứ Đồng';
-    if (subEl) subEl.textContent = props.to_list ? `Tổ ${props.to_list}` : 'Chưa rõ';
+    if (titleEl) titleEl.textContent = props.name ? `🌾 Xứ Đồng: ${props.name}` : '🌾 Xứ Đồng';
+
+    let toClean = '';
+    if (props.to_list) {
+      const parts = String(props.to_list)
+        .split(',')
+        .map(s => s.trim())
+        .filter(s => s && s.toLowerCase() !== 'nan' && s.toLowerCase() !== 'undefined' && s.toLowerCase() !== 'null');
+      if (parts.length > 0) {
+        toClean = parts.map(p => p.startsWith('Tổ') ? p : `Tổ ${p}`).join(', ');
+      }
+    }
+    if (subEl) subEl.textContent = toClean ? `📍 Địa bàn: ${toClean}` : '📍 Địa bàn: Xã Hòa Tiến';
     
     // KPI Cards
     const statArea = document.getElementById('sheet-stat-area');
@@ -513,9 +524,10 @@ const AgriMap = {
     const statFarmers = document.getElementById('sheet-stat-farmers');
     const statFunds = document.getElementById('sheet-stat-funds');
 
-    if (statArea) statArea.textContent = `${AgriData.formatArea(props.tong_dt)} (${props.dt_ha} ha)`;
-    if (statPlots) statPlots.textContent = `${props.so_thua} thửa`;
-    if (statFarmers) statFarmers.textContent = `${props.so_ho} hộ`;
+    const dtHa = props.dt_ha || (props.tong_dt ? (parseFloat(props.tong_dt) / 10000).toFixed(2) : '0');
+    if (statArea) statArea.innerHTML = `${AgriData.formatArea(props.tong_dt)} <span class="kpi-unit-sub">(${dtHa} ha)</span>`;
+    if (statPlots) statPlots.textContent = `${props.so_thua || 0} thửa`;
+    if (statFarmers) statFarmers.textContent = `${props.so_ho || 0} hộ`;
     if (statFunds) statFunds.textContent = `Q1: ${AgriData.formatArea(props.quy_1)} | Q2: ${AgriData.formatArea(props.quy_2)}`;
 
     // Land Fund Ratio Progress Bar
@@ -538,11 +550,27 @@ const AgriMap = {
     // Fetch and render plots for this zone
     this.currentZonePlots = AgriData.findPlotsByZone(props.name);
     
-    // Reset search input
+    // Setup search input & clear button
     const searchInput = document.getElementById('sheet-search-farmer');
+    const searchClear = document.getElementById('sheet-search-clear');
     if (searchInput) {
       searchInput.value = '';
-      searchInput.oninput = (e) => this.renderSheetFarmers(e.target.value);
+      if (searchClear) searchClear.style.display = 'none';
+      searchInput.oninput = (e) => {
+        const val = e.target.value;
+        if (searchClear) searchClear.style.display = val ? 'flex' : 'none';
+        this.renderSheetFarmers(val);
+      };
+    }
+    if (searchClear) {
+      searchClear.onclick = () => {
+        if (searchInput) {
+          searchInput.value = '';
+          searchClear.style.display = 'none';
+          searchInput.focus();
+          this.renderSheetFarmers('');
+        }
+      };
     }
 
     this.renderSheetFarmers('');
@@ -570,12 +598,13 @@ const AgriMap = {
 
     if (plots.length === 0) {
       listEl.innerHTML = `
-        <div style="text-align:center; padding: 1.5rem 1rem; color: var(--text-muted); font-size: 0.84rem;">
-          <i data-lucide="inbox" style="width:32px; height:32px; margin: 0 auto 6px; opacity:0.6; display:block;"></i>
-          ${query ? 'Không tìm thấy hộ hoặc thửa phù hợp.' : 'Chưa có thông tin thửa ruộng chi tiết trong vùng này.'}
+        <div class="sheet-empty-state">
+          <i data-lucide="search-x" class="empty-icon"></i>
+          <p class="empty-title">${query ? 'Không tìm thấy kết quả phù hợp' : 'Chưa có dữ liệu thửa ruộng'}</p>
+          <p class="empty-desc">${query ? `Không tìm thấy hộ hoặc số thửa nào khớp với "${searchQuery}"` : 'Vùng này hiện chưa có thông tin chi tiết từng thửa.'}</p>
         </div>
       `;
-      if (badgeEl) badgeEl.textContent = '0 hộ';
+      if (badgeEl) badgeEl.textContent = '0 hộ (0 thửa)';
       if (window.lucide) lucide.createIcons();
       return;
     }
@@ -603,35 +632,49 @@ const AgriMap = {
 
     listEl.innerHTML = farmersList.map((f, fIdx) => {
       const phoneHtml = f.dien_thoai 
-        ? `<a href="tel:${f.dien_thoai}" class="farmer-phone-link" title="Bấm để gọi ${f.dien_thoai}"><i data-lucide="phone"></i> ${f.dien_thoai}</a>`
+        ? `<a href="tel:${f.dien_thoai}" class="farmer-call-link" title="Bấm để gọi ${f.dien_thoai}"><i data-lucide="phone"></i> <span>${f.dien_thoai}</span></a>`
         : '';
 
       return `
-        <div class="sheet-farmer-card compact">
-          <div class="farmer-card-header">
-            <div class="farmer-name-group">
-              <span class="farmer-icon">👨‍🌾</span>
-              <strong class="farmer-title">${f.name}</strong>
-              ${phoneHtml}
+        <div class="farmer-group-card">
+          <div class="farmer-card-topbar">
+            <div class="farmer-identity">
+              <span class="farmer-avatar">👨‍🌾</span>
+              <div class="farmer-name-box">
+                <span class="farmer-name">${f.name}</span>
+                <div class="farmer-meta-inline">
+                  ${phoneHtml}
+                  <span class="farmer-plots-counter">(${f.plots.length} thửa)</span>
+                </div>
+              </div>
             </div>
-            <div class="farmer-total-area">
-              ${AgriData.formatArea(f.totalArea)}
+            <div class="farmer-area-badge">
+              <strong class="area-number">${AgriData.formatArea(f.totalArea)}</strong>
             </div>
           </div>
           
-          <div class="farmer-chips-wrap">
+          <div class="farmer-plots-container">
             ${f.plots.map(p => {
               const isRented = p.is_rented || (p.ho_sx && p.chu_ruong && p.ho_sx.trim().toLowerCase() !== p.chu_ruong.trim().toLowerCase());
-              const loaiDat = p.quy_2 > 0 ? 'Q2' : (p.quy_khac > 0 ? 'Khác' : 'Q1');
-              const tenantText = isRented ? ` • Chủ khác: ${p.chu_ruong}` : '';
-              const badgeClass = isRented ? 'rented' : 'owner';
+              const loaiDat = p.quy_2 > 0 ? 'Quỹ 2' : (p.quy_khac > 0 ? 'Khác' : 'Quỹ 1');
+              const loaiDatClass = p.quy_2 > 0 ? 'fund-q2' : (p.quy_khac > 0 ? 'fund-other' : 'fund-q1');
+              
+              const tenantBadge = isRented
+                ? `<span class="plot-tenant-pill" title="Chủ đất gốc: ${p.chu_ruong}"><i data-lucide="refresh-cw"></i> <span>Chủ khác: ${p.chu_ruong}</span></span>`
+                : '';
+
+              const sttClean = String(p.stt || 'Thửa').replace(/thửa\s*/i, '');
 
               return `
-                <div class="compact-plot-chip ${badgeClass}" title="Diện tích: ${AgriData.formatArea(p.tong_dt)}${tenantText}">
-                  <span class="chip-stt">${p.stt || 'Thửa'}</span>
-                  <span class="chip-fund">${loaiDat}</span>
-                  <span class="chip-area">${AgriData.formatArea(p.tong_dt)}</span>
-                  ${tenantText ? `<span class="chip-owner">${tenantText}</span>` : ''}
+                <div class="plot-row-item">
+                  <div class="plot-left-group">
+                    <span class="plot-num-badge" title="Số thứ tự thửa">#${sttClean}</span>
+                    <span class="plot-fund-tag ${loaiDatClass}">${loaiDat}</span>
+                    ${tenantBadge}
+                  </div>
+                  <div class="plot-right-group">
+                    <strong class="plot-area-val">${AgriData.formatArea(p.tong_dt)}</strong>
+                  </div>
                 </div>
               `;
             }).join('')}

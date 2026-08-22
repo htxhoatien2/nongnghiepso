@@ -694,79 +694,116 @@
             </div>
           </div>
 
-          <!-- Map Floating Detail Drawer / Popup Sheet (Redesigned Ultra-Compact & Elegant) -->
+          <!-- Map Floating Detail Drawer / Popup Sheet (Redesigned Ultra-Compact, Clean & Elegant) -->
           <div id="map-bottom-sheet" class="map-sheet">
             <div class="sheet-handle-bar">
               <div class="sheet-handle"></div>
             </div>
             
-            <!-- Header: Tinh Gọn 1 Hàng Ngang Hiện Đại -->
+            <!-- Header Tinh Gọn: Badge, Tên Vùng, Địa Bàn, Nút Sửa & Đóng -->
             <div class="sheet-header">
               <div class="sheet-header-main">
                 <div class="sheet-badge-row">
-                  <span class="sheet-tag"><i data-lucide="map-pin"></i> XỨ ĐỒNG</span>
-                  <span id="sheet-subtitle" class="sheet-loc-badge">Tổ --</span>
+                  <span class="sheet-tag"><i data-lucide="sprout"></i> VÙNG SẢN XUẤT</span>
+                  <span id="sheet-subtitle" class="sheet-loc-badge">📍 Địa bàn: --</span>
                 </div>
-                <h3 id="sheet-title" class="sheet-title">Xứ Đồng</h3>
+                <h3 id="sheet-title" class="sheet-title">🌾 Xứ Đồng</h3>
               </div>
               <div class="sheet-header-actions">
-                <button id="sheet-edit-btn" class="btn btn-emerald btn-xs sheet-btn-edit" title="Chỉnh sửa ranh giới & thửa ruộng">
+                <button id="sheet-edit-btn" class="btn-sheet-edit" title="Chỉnh sửa ranh giới & danh sách thửa">
                   <i data-lucide="edit-3"></i> <span>Sửa Vùng</span>
                 </button>
-                <button id="sheet-close-btn" class="close-icon-btn" title="Đóng bảng chi tiết"><i data-lucide="x"></i></button>
+                <button id="sheet-close-btn" class="btn-sheet-close" title="Đóng bảng chi tiết">
+                  <i data-lucide="x"></i>
+                </button>
               </div>
             </div>
             
-            <!-- Sleek Action Chips Bar (Chỉ đường Maps & Tọa độ trên 1 hàng ngang) -->
+            <!-- Quick Action Pills Bar: Chỉ đường, Sao chép tọa độ, Google Earth trên 1 hàng -->
             <div class="sheet-actions-bar">
-              <button class="sheet-action-chip primary" onclick="AgriMap.navigateToCurrentZone()" title="Chỉ đường lái xe Google Maps">
+              <button class="sheet-action-chip chip-nav-maps" onclick="AgriMap.navigateToCurrentZone()" title="Chỉ đường Google Maps">
                 <i data-lucide="navigation"></i> <span>Chỉ Đường Maps</span>
               </button>
-              <button class="sheet-action-chip" onclick="AgriMap.copyCurrentZoneCoords()" title="Sao chép tọa độ GPS tâm vùng">
-                <i data-lucide="copy"></i> <span>Tọa Độ GPS</span>
+              <button class="sheet-action-chip chip-copy-gps" onclick="AgriMap.copyCurrentZoneCoords()" title="Sao chép tọa độ GPS tâm vùng">
+                <i data-lucide="copy"></i> <span>Sao Chép Tọa Độ</span>
               </button>
-              <button class="sheet-action-chip" onclick="AgriMap.openGoogleEarthCurrentZone()" title="Xem 3D trên Google Earth">
-                <i data-lucide="globe"></i> <span>Earth 3D</span>
+              <button class="sheet-action-chip chip-google-earth" onclick="AgriMap.openGoogleEarthCurrentZone()" title="Xem 3D trên Google Earth">
+                <i data-lucide="globe"></i> <span>Google Earth</span>
               </button>
             </div>
             
             <div class="sheet-body">
-              <!-- Compact Metric Ribbon (3 Cột mini siêu gọn) -->
-              <div class="sheet-compact-kpi-banner">
-                <div class="kpi-mini-pill">
-                  <span class="kpi-pill-lbl">Tổng diện tích</span>
-                  <strong id="sheet-stat-area" class="kpi-pill-val text-emerald">0 m²</strong>
+              <!-- KPI Mini Grid 4 Ô Tinh Gọn -->
+              <div class="sheet-kpi-grid">
+                <div class="kpi-card-item">
+                  <div class="kpi-card-icon emerald"><i data-lucide="maximize-2"></i></div>
+                  <div class="kpi-card-info">
+                    <span class="kpi-card-label">TỔNG DIỆN TÍCH</span>
+                    <strong id="sheet-stat-area" class="kpi-card-val text-emerald">0 m²</strong>
+                  </div>
                 </div>
-                <div class="kpi-mini-pill">
-                  <span class="kpi-pill-lbl">Số thửa</span>
-                  <strong id="sheet-stat-plots" class="kpi-pill-val">0 thửa</strong>
+
+                <div class="kpi-card-item">
+                  <div class="kpi-card-icon purple"><i data-lucide="layers"></i></div>
+                  <div class="kpi-card-info">
+                    <span class="kpi-card-label">SỐ THỬA RUỘNG</span>
+                    <strong id="sheet-stat-plots" class="kpi-card-val">0 thửa</strong>
+                  </div>
                 </div>
-                <div class="kpi-mini-pill">
-                  <span class="kpi-pill-lbl">Hộ canh tác</span>
-                  <strong id="sheet-stat-farmers" class="kpi-pill-val text-blue">0 hộ</strong>
+
+                <div class="kpi-card-item">
+                  <div class="kpi-card-icon blue"><i data-lucide="users"></i></div>
+                  <div class="kpi-card-info">
+                    <span class="kpi-card-label">HỘ CANH TÁC</span>
+                    <strong id="sheet-stat-farmers" class="kpi-card-val text-blue">0 hộ</strong>
+                  </div>
+                </div>
+
+                <div class="kpi-card-item">
+                  <div class="kpi-card-icon amber"><i data-lucide="pie-chart"></i></div>
+                  <div class="kpi-card-info">
+                    <span class="kpi-card-label">QUỸ 1 / QUỸ 2</span>
+                    <strong id="sheet-stat-funds" class="kpi-card-val font-mono-sm">Q1: 0 | Q2: 0</strong>
+                  </div>
                 </div>
               </div>
 
-              <!-- Mini Progress Bar for Land Fund Distribution -->
-              <div id="sheet-fund-bar-wrap" class="sheet-fund-bar-wrap">
-                <div class="fund-progress-bar">
-                  <div id="sheet-bar-quy1" class="fund-segment seg-quy1" style="width: 80%;"></div>
-                  <div id="sheet-bar-quy2" class="fund-segment seg-quy2" style="width: 20%;"></div>
+              <!-- Thanh Phân Bổ Tỷ Lệ Quỹ Đất Trực Quan -->
+              <div id="sheet-fund-bar-wrap" class="sheet-fund-box">
+                <div class="fund-progress-track">
+                  <div id="sheet-bar-quy1" class="fund-segment-bar seg-quy1" style="width: 50%;"></div>
+                  <div id="sheet-bar-quy2" class="fund-segment-bar seg-quy2" style="width: 50%;"></div>
                 </div>
-                <div class="fund-legend-row">
-                  <span><span class="dot dot-quy1"></span> Quỹ 1: <strong id="sheet-pct-quy1">0%</strong></span>
-                  <span><span class="dot dot-quy2"></span> Quỹ 2: <strong id="sheet-pct-quy2">0%</strong></span>
+                <div class="fund-details-legend">
+                  <span class="fund-legend-item">
+                    <span class="legend-dot q1"></span>
+                    <span class="legend-label">Quỹ 1:</span>
+                    <strong id="sheet-pct-quy1" class="legend-val">0% (0 m²)</strong>
+                  </span>
+                  <span class="fund-legend-item">
+                    <span class="legend-dot q2"></span>
+                    <span class="legend-label">Quỹ 2:</span>
+                    <strong id="sheet-pct-quy2" class="legend-val">0% (0 m²)</strong>
+                  </span>
                 </div>
               </div>
 
-              <!-- Search Inside Zone -->
-              <div class="sheet-search-wrap">
-                <i data-lucide="search"></i>
-                <input type="text" id="sheet-search-farmer" placeholder="Tìm nhanh hộ sản xuất hoặc số thửa...">
-                <span id="sheet-farmers-count-badge" class="count-badge">0 hộ</span>
+              <!-- Thanh Tìm Kiếm Nhanh Hộ & Thửa Trong Vùng -->
+              <div class="sheet-search-filter-row">
+                <div class="sheet-search-input-box">
+                  <i data-lucide="search" class="search-ico"></i>
+                  <input type="text" id="sheet-search-farmer" placeholder="Tìm nhanh hộ sản xuất hoặc số thửa..." autocomplete="off">
+                  <button type="button" id="sheet-search-clear" class="search-clear-btn" style="display:none;" title="Xóa tìm kiếm">
+                    <i data-lucide="x"></i>
+                  </button>
+                </div>
+                <div class="sheet-section-title-row">
+                  <span class="section-title-txt">Danh Sách Hộ & Chi Tiết Thửa</span>
+                  <span id="sheet-farmers-count-badge" class="count-pill">0 hộ (0 thửa)</span>
+                </div>
               </div>
 
-              <!-- List of Farmers & Plots in this Zone -->
+              <!-- Danh Sách Hộ & Chi Tiết Từng Thửa -->
               <div id="sheet-plots-list" class="sheet-plots-list">
                 <!-- Injected via JS -->
               </div>
@@ -3539,23 +3576,23 @@
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 
   <!-- Embedded Data (Offline & file:// protocol support) -->
-  <script src="data/data_embedded.js?v=3.1.4"></script>
+  <script src="data/data_embedded.js?v=3.1.5"></script>
 
   <!-- Supabase JS SDK (v2) from CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase_config.js?v=3.1.4"></script>
+  <script src="js/supabase_config.js?v=3.1.5"></script>
 
   <!-- App JS Modules with Cache Buster -->
-  <script src="js/data.js?v=3.1.4"></script>
-  <script src="js/auth.js?v=3.1.4"></script>
-  <script src="js/sync.js?v=3.1.4"></script>
-  <script src="js/admin.js?v=3.1.4"></script>
-  <script src="js/map.js?v=3.1.4"></script>
-  <script src="js/records.js?v=3.1.4"></script>
-  <script src="js/farmers.js?v=3.1.4"></script>
-  <script src="js/analytics.js?v=3.1.4"></script>
-  <script src="js/services.js?v=3.1.4"></script>
-  <script src="js/purchasing.js?v=3.1.4"></script>
-  <script src="js/app.js?v=3.1.4"></script>
+  <script src="js/data.js?v=3.1.5"></script>
+  <script src="js/auth.js?v=3.1.5"></script>
+  <script src="js/sync.js?v=3.1.5"></script>
+  <script src="js/admin.js?v=3.1.5"></script>
+  <script src="js/map.js?v=3.1.5"></script>
+  <script src="js/records.js?v=3.1.5"></script>
+  <script src="js/farmers.js?v=3.1.5"></script>
+  <script src="js/analytics.js?v=3.1.5"></script>
+  <script src="js/services.js?v=3.1.5"></script>
+  <script src="js/purchasing.js?v=3.1.5"></script>
+  <script src="js/app.js?v=3.1.5"></script>
 </body>
 </html>

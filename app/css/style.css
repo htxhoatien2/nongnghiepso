@@ -972,14 +972,15 @@ body.dark-mode .map-sheet {
   border-radius: 10px;
 }
 
-/* Header */
+/* Header Popup Xứ Đồng */
 .sheet-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  padding: 8px 14px;
+  padding: 10px 14px 8px;
   border-bottom: 1px solid var(--border-subtle);
   gap: 8px;
+  background: var(--bg-surface);
 }
 
 .sheet-header-main {
@@ -990,48 +991,55 @@ body.dark-mode .map-sheet {
 .sheet-badge-row {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 2px;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 3px;
 }
 
 .sheet-tag {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  font-size: 0.64rem;
+  font-size: 0.62rem;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--primary);
-  background: var(--primary-light);
-  padding: 1px 6px;
-  border-radius: 8px;
+  letter-spacing: 0.03em;
+  color: #059669;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  padding: 1.5px 6px;
+  border-radius: 6px;
 }
 
 .sheet-tag i {
-  width: 10px;
-  height: 10px;
+  width: 11px;
+  height: 11px;
 }
 
 .sheet-loc-badge {
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   font-weight: 600;
   color: var(--text-muted);
   background: var(--bg-app);
   border: 1px solid var(--border-subtle);
-  padding: 1px 6px;
-  border-radius: 8px;
+  padding: 1.5px 6px;
+  border-radius: 6px;
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sheet-title {
   font-size: 1.05rem;
   font-weight: 800;
   color: var(--text-main);
-  line-height: 1.2;
+  line-height: 1.25;
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  letter-spacing: -0.01em;
 }
 
 .sheet-header-actions {
@@ -1041,19 +1049,34 @@ body.dark-mode .map-sheet {
   flex-shrink: 0;
 }
 
-.sheet-btn-edit {
-  padding: 4px 8px !important;
-  font-size: 0.72rem !important;
-  border-radius: 6px !important;
-  font-weight: 700 !important;
+.btn-sheet-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 9px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: 8px;
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
 
-.sheet-btn-edit i {
+.btn-sheet-edit:hover {
+  background: #059669;
+  color: #ffffff;
+  border-color: #059669;
+  box-shadow: 0 2px 6px rgba(5, 150, 105, 0.3);
+}
+
+.btn-sheet-edit i {
   width: 12px;
   height: 12px;
 }
 
-.close-icon-btn {
+.btn-sheet-close {
   background: var(--bg-app);
   border: 1px solid var(--border-subtle);
   width: 28px;
@@ -1067,33 +1090,35 @@ body.dark-mode .map-sheet {
   transition: all 0.15s ease;
 }
 
-.close-icon-btn:hover {
+.btn-sheet-close:hover {
   background: var(--border-color);
   color: var(--text-main);
+  transform: rotate(90deg);
 }
 
-.close-icon-btn i {
+.btn-sheet-close i {
   width: 14px;
   height: 14px;
 }
 
-/* Action Chips Bar (1 Hàng Ngang Gọn Gàng) */
+/* Quick Action Chips Bar */
 .sheet-actions-bar {
-  padding: 6px 14px 4px;
-  display: flex;
+  padding: 6px 14px;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 0.9fr;
   gap: 6px;
-  align-items: center;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .sheet-action-chip {
-  flex: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 4px;
-  padding: 5px 8px;
-  border-radius: 8px;
-  font-size: 0.72rem;
+  padding: 5px 6px;
+  border-radius: 7px;
+  font-size: 0.7rem;
   font-weight: 700;
   border: 1px solid var(--border-color);
   background: var(--bg-app);
@@ -1104,8 +1129,9 @@ body.dark-mode .map-sheet {
 }
 
 .sheet-action-chip i {
-  width: 13px;
-  height: 13px;
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
 }
 
 .sheet-action-chip:hover {
@@ -1114,119 +1140,193 @@ body.dark-mode .map-sheet {
   color: var(--primary);
 }
 
-.sheet-action-chip.primary {
+.sheet-action-chip.chip-nav-maps {
   background: linear-gradient(135deg, #1a73e8, #0d47a1);
   color: #ffffff;
   border-color: #1a73e8;
-  box-shadow: 0 2px 6px rgba(26, 115, 232, 0.3);
+  box-shadow: 0 2px 5px rgba(26, 115, 232, 0.25);
 }
 
-.sheet-action-chip.primary i {
-  color: #ffffff;
-}
-
-.sheet-action-chip.primary:hover {
+.sheet-action-chip.chip-nav-maps:hover {
   transform: translateY(-1px);
-  box-shadow: 0 3px 8px rgba(26, 115, 232, 0.45);
+  box-shadow: 0 3px 8px rgba(26, 115, 232, 0.4);
 }
 
-/* Body Container */
+/* Body Container & Custom Slim Scrollbar */
 .sheet-body {
-  padding: 6px 14px 12px;
+  padding: 8px 12px 14px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  flex: 1;
 }
 
-/* Compact KPI Banner (3 Cột Mini Tiết Kiệm Không Gian) */
-.sheet-compact-kpi-banner {
+.sheet-body::-webkit-scrollbar,
+.sheet-plots-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sheet-body::-webkit-scrollbar-thumb,
+.sheet-plots-list::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+}
+
+body.dark-mode .sheet-body::-webkit-scrollbar-thumb,
+body.dark-mode .sheet-plots-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* KPI Mini Grid 4 Ô */
+.sheet-kpi-grid {
   display: grid;
-  grid-template-columns: 1.4fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 6px;
+}
+
+.kpi-card-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   background: var(--bg-app);
   border: 1px solid var(--border-subtle);
-  border-radius: 10px;
+  border-radius: 9px;
   padding: 6px 8px;
+  transition: all 0.15s ease;
 }
 
-.kpi-mini-pill {
+.kpi-card-item:hover {
+  border-color: var(--border-color);
+  background: var(--bg-surface);
+}
+
+.kpi-card-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  border-right: 1px solid var(--border-subtle);
-  padding: 0 4px;
+  flex-shrink: 0;
 }
 
-.kpi-mini-pill:last-child {
-  border-right: none;
+.kpi-card-icon i {
+  width: 14px;
+  height: 14px;
 }
 
-.kpi-pill-lbl {
-  font-size: 0.62rem;
-  font-weight: 600;
+.kpi-card-icon.emerald { background: rgba(16, 185, 129, 0.12); color: #059669; }
+.kpi-card-icon.purple  { background: rgba(139, 92, 246, 0.12); color: #7c3aed; }
+.kpi-card-icon.blue    { background: rgba(59, 130, 246, 0.12); color: #2563eb; }
+.kpi-card-icon.amber   { background: rgba(245, 158, 11, 0.12); color: #d97706; }
+
+.kpi-card-info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.kpi-card-label {
+  font-size: 0.58rem;
+  font-weight: 700;
   color: var(--text-muted);
-  text-transform: uppercase;
   letter-spacing: 0.02em;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.kpi-pill-val {
+.kpi-card-val {
   font-size: 0.82rem;
   font-weight: 800;
+  color: var(--text-main);
   line-height: 1.2;
-  margin-top: 1px;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Mini Progress Bar for Land Fund Distribution */
-.sheet-fund-bar-wrap {
+.kpi-unit-sub {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.font-mono-sm {
+  font-size: 0.72rem !important;
+  font-weight: 700;
+}
+
+/* Land Fund Distribution Box */
+.sheet-fund-box {
   background: var(--bg-app);
   border: 1px solid var(--border-subtle);
   border-radius: 8px;
-  padding: 5px 8px;
+  padding: 6px 9px;
 }
 
-.fund-progress-bar {
-  height: 5px;
+.fund-progress-track {
+  height: 6px;
   background: var(--border-color);
-  border-radius: 3px;
+  border-radius: 4px;
   display: flex;
   overflow: hidden;
-  margin-bottom: 4px;
+  margin-bottom: 5px;
 }
 
-.fund-segment {
+.fund-segment-bar {
   height: 100%;
-  transition: width 0.3s ease;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.seg-quy1 { background: #059669; }
-.seg-quy2 { background: #3b82f6; }
+.seg-quy1 { background: linear-gradient(90deg, #059669, #10b981); }
+.seg-quy2 { background: linear-gradient(90deg, #2563eb, #3b82f6); }
 
-.fund-legend-row {
+.fund-details-legend {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   font-size: 0.68rem;
+}
+
+.fund-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   color: var(--text-muted);
 }
 
-.dot {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
+.legend-dot {
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  margin-right: 3px;
+  display: inline-block;
 }
 
-.dot-quy1 { background: #059669; }
-.dot-quy2 { background: #3b82f6; }
+.legend-dot.q1 { background: #059669; }
+.legend-dot.q2 { background: #3b82f6; }
 
-/* Search Wrap */
-.sheet-search-wrap {
+.legend-label {
+  font-size: 0.66rem;
+  color: var(--text-muted);
+}
+
+.legend-val {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+/* Search and Section Header */
+.sheet-search-filter-row {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.sheet-search-input-box {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -1234,161 +1334,307 @@ body.dark-mode .map-sheet {
   border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 4px 8px;
+  transition: border-color 0.15s ease;
 }
 
-.sheet-search-wrap i {
+.sheet-search-input-box:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.15);
+}
+
+.sheet-search-input-box .search-ico {
   width: 14px;
   height: 14px;
   color: var(--text-muted);
   flex-shrink: 0;
 }
 
-.sheet-search-wrap input {
+.sheet-search-input-box input {
   border: none;
   background: transparent;
   width: 100%;
   font-size: 0.76rem;
   color: var(--text-main);
   outline: none;
+  font-family: inherit;
 }
 
-.count-badge {
-  font-size: 0.66rem;
+.search-clear-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-clear-btn i {
+  width: 13px;
+  height: 13px;
+}
+
+.search-clear-btn:hover {
+  color: var(--text-main);
+}
+
+.sheet-section-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px 2px 0;
+}
+
+.section-title-txt {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.count-pill {
+  font-size: 0.65rem;
   font-weight: 700;
-  color: var(--primary);
-  background: var(--primary-light);
+  color: #059669;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
   padding: 1px 6px;
   border-radius: 8px;
   white-space: nowrap;
 }
 
-/* Farmer Card List inside Sheet (Ultra Compact) */
+/* Plots / Farmers List */
 .sheet-plots-list {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  max-height: 240px;
+  max-height: 250px;
   overflow-y: auto;
 }
 
-.sheet-farmer-card.compact {
+.farmer-group-card {
   background: var(--bg-app);
   border: 1px solid var(--border-subtle);
-  border-radius: 8px;
-  padding: 6px 8px;
+  border-radius: 9px;
+  padding: 7px 8px;
   transition: all 0.15s ease;
 }
 
-.sheet-farmer-card.compact:hover {
+.farmer-group-card:hover {
   border-color: var(--primary);
   background: var(--bg-surface);
 }
 
-.sheet-farmer-card .farmer-card-header {
+.farmer-card-topbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 4px;
-  border-bottom: none;
-  padding-bottom: 0;
+  margin-bottom: 5px;
 }
 
-.sheet-farmer-card .farmer-name-group {
+.farmer-identity {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.farmer-avatar {
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.farmer-name-box {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.farmer-name {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.farmer-meta-inline {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 1px;
+}
+
+.farmer-call-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: #2563eb;
+  text-decoration: none;
+  font-size: 0.66rem;
+  font-weight: 700;
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  padding: 0.5px 5px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.farmer-call-link:hover {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.farmer-call-link i {
+  width: 9px;
+  height: 9px;
+}
+
+.farmer-plots-counter {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+.farmer-area-badge {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.area-number {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #059669;
+}
+
+/* Plots Sub-List Rows */
+.farmer-plots-container {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  border-top: 1px dashed var(--border-subtle);
+  padding-top: 4px;
+}
+
+.plot-row-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 3px 6px;
+  font-size: 0.7rem;
+  transition: background 0.12s ease;
+}
+
+.plot-row-item:hover {
+  background: rgba(16, 185, 129, 0.04);
+}
+
+.plot-left-group {
   display: flex;
   align-items: center;
   gap: 4px;
   min-width: 0;
+  flex-wrap: wrap;
 }
 
-.farmer-icon {
-  font-size: 0.8rem;
-}
-
-.farmer-title {
-  font-size: 0.78rem;
+.plot-num-badge {
   font-weight: 800;
-  color: var(--text-main);
-  white-space: nowrap;
+  color: #059669;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-family: monospace;
 }
 
-.farmer-phone-link {
+.plot-fund-tag {
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.plot-fund-tag.fund-q1 {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+}
+
+.plot-fund-tag.fund-q2 {
+  background: rgba(59, 130, 246, 0.1);
+  color: #2563eb;
+}
+
+.plot-fund-tag.fund-other {
+  background: rgba(139, 92, 246, 0.1);
+  color: #7c3aed;
+}
+
+.plot-tenant-pill {
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  color: var(--accent);
-  text-decoration: none;
-  font-size: 0.68rem;
+  font-size: 0.6rem;
   font-weight: 600;
-  margin-left: 4px;
-  background: rgba(2, 132, 199, 0.08);
-  padding: 1px 4px;
-  border-radius: 4px;
-}
-
-.farmer-phone-link i {
-  width: 10px;
-  height: 10px;
-}
-
-.farmer-total-area {
-  font-size: 0.8rem;
-  font-weight: 800;
-  color: var(--primary);
-  white-space: nowrap;
-}
-
-/* Horizontal Chips for Plots inside Farmer Card */
-.farmer-chips-wrap {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.compact-plot-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  padding: 2px 6px;
-  border-radius: 5px;
-  font-size: 0.68rem;
-  color: var(--text-main);
-}
-
-.compact-plot-chip.owner {
-  border-left: 3px solid #059669;
-}
-
-.compact-plot-chip.rented {
-  border-left: 3px solid #f59e0b;
-  background: rgba(245, 158, 11, 0.05);
-}
-
-.chip-stt {
-  font-weight: 800;
-  color: var(--text-main);
-}
-
-.chip-fund {
-  font-weight: 700;
-  color: var(--primary);
-  font-size: 0.64rem;
-}
-
-.compact-plot-chip.rented .chip-fund {
   color: #d97706;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  padding: 0.5px 4px;
+  border-radius: 4px;
+  max-width: 140px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.chip-area {
-  font-weight: 600;
+.plot-tenant-pill i {
+  width: 9px;
+  height: 9px;
+}
+
+.plot-right-group {
+  text-align: right;
+  flex-shrink: 0;
+  margin-left: 4px;
+}
+
+.plot-area-val {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+/* Empty State */
+.sheet-empty-state {
+  text-align: center;
+  padding: 18px 12px;
   color: var(--text-muted);
 }
 
-.chip-owner {
-  font-size: 0.62rem;
-  color: #d97706;
-  font-style: italic;
+.sheet-empty-state .empty-icon {
+  width: 30px;
+  height: 30px;
+  margin: 0 auto 6px;
+  opacity: 0.5;
+  display: block;
+}
+
+.sheet-empty-state .empty-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin: 0 0 2px;
+  color: var(--text-main);
+}
+
+.sheet-empty-state .empty-desc {
+  font-size: 0.68rem;
+  margin: 0;
+  color: var(--text-muted);
 }
 
 /* ==========================================================================
