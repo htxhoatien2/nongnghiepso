@@ -20,7 +20,7 @@ const AgriAuth = {
       to_dan_pho: 'Tất cả các tổ',
       assigned_zones: ['Tất cả các xứ đồng'],
       phone: '0905123456',
-      email: 'htxhoatien2@gmail.com',
+      email: 'giamdoc.htxhoatien2@gmail.com',
       ghi_chu: 'Quản trị viên tối cao (Super Admin) toàn hệ thống HTX Hòa Tiến 2',
       date_joined: '2023-01-01',
       active: true
@@ -171,7 +171,12 @@ const AgriAuth = {
         if (Array.isArray(parsed) && parsed.length > 0) {
           // Remove old mock template users usr_002 to usr_006 if they didn't have user input
           const legacyMockIds = ['usr_002', 'usr_003', 'usr_004', 'usr_005', 'usr_006'];
-          loaded = parsed.filter(u => !legacyMockIds.includes(u.id));
+          loaded = parsed.filter(u => !legacyMockIds.includes(u.id)).map(u => {
+            if (u.id === 'usr_001' && u.email === 'htxhoatien2@gmail.com') {
+              u.email = 'giamdoc.htxhoatien2@gmail.com';
+            }
+            return u;
+          });
         }
       } catch (e) {}
     }
@@ -1339,17 +1344,38 @@ const AgriAuth = {
     this.closeLoginModal();
   },
 
-  handleRegisterSubmit() {
-    const fullname = (document.getElementById('auth-reg-fullname') || document.getElementById('reg-fullname'))?.value.trim();
-    const email = (document.getElementById('auth-reg-email') || document.getElementById('reg-email'))?.value.trim().toLowerCase();
-    const phone = (document.getElementById('auth-reg-phone') || document.getElementById('reg-phone'))?.value.trim();
-    const cccd = (document.getElementById('auth-reg-cccd') || document.getElementById('reg-cccd'))?.value.trim() || '';
-    const toDanPho = (document.getElementById('auth-reg-todanpho') || document.getElementById('reg-to'))?.value || 'Tổ 1';
-    const role = (document.getElementById('auth-reg-role') || document.getElementById('reg-role'))?.value || 'farmer';
-    const pin = (document.getElementById('auth-reg-pin') || document.getElementById('reg-pin'))?.value.trim();
-    const note = (document.getElementById('auth-reg-note') || document.getElementById('reg-note'))?.value.trim() || '';
+  handleRegisterSubmit(prefix = '') {
+    let fullname, username, email, phone, cccd, toDanPho, role, pin, pinConfirm, note, errorEl;
 
-    const errorEl = document.getElementById('auth-register-error') || document.getElementById('reg-error');
+    if (prefix) {
+      fullname = document.getElementById(`${prefix}-fullname`)?.value.trim();
+      username = document.getElementById(`${prefix}-username`)?.value.trim().toLowerCase();
+      email = document.getElementById(`${prefix}-email`)?.value.trim().toLowerCase();
+      phone = document.getElementById(`${prefix}-phone`)?.value.trim();
+      cccd = document.getElementById(`${prefix}-cccd`)?.value.trim() || '';
+      toDanPho = document.getElementById(`${prefix}-todanpho`)?.value || document.getElementById(`${prefix}-to`)?.value || 'Tổ 1';
+      role = document.getElementById(`${prefix}-role`)?.value || 'farmer';
+      pin = document.getElementById(`${prefix}-pin`)?.value.trim();
+      pinConfirm = document.getElementById(`${prefix}-pin-confirm`)?.value?.trim();
+      note = document.getElementById(`${prefix}-note`)?.value.trim() || '';
+      errorEl = document.getElementById(`${prefix}-error`);
+    } else {
+      const homeBox = document.getElementById('home-reg-form-box');
+      const isHome = homeBox && homeBox.style.display !== 'none';
+      const p = isHome ? 'home-reg' : 'auth-reg';
+
+      fullname = (document.getElementById(`${p}-fullname`) || document.getElementById('home-reg-fullname') || document.getElementById('auth-reg-fullname'))?.value.trim();
+      username = (document.getElementById(`${p}-username`) || document.getElementById('home-reg-username') || document.getElementById('auth-reg-username'))?.value.trim().toLowerCase();
+      email = (document.getElementById(`${p}-email`) || document.getElementById('home-reg-email') || document.getElementById('auth-reg-email'))?.value.trim().toLowerCase();
+      phone = (document.getElementById(`${p}-phone`) || document.getElementById('home-reg-phone') || document.getElementById('auth-reg-phone'))?.value.trim();
+      cccd = (document.getElementById(`${p}-cccd`) || document.getElementById('home-reg-cccd') || document.getElementById('auth-reg-cccd'))?.value.trim() || '';
+      toDanPho = (document.getElementById(`${p}-todanpho`) || document.getElementById(`${p}-to`) || document.getElementById('auth-reg-todanpho'))?.value || 'Tổ 1';
+      role = (document.getElementById(`${p}-role`) || document.getElementById('home-reg-role') || document.getElementById('auth-reg-role'))?.value || 'farmer';
+      pin = (document.getElementById(`${p}-pin`) || document.getElementById('home-reg-pin') || document.getElementById('auth-reg-pin'))?.value.trim();
+      pinConfirm = (document.getElementById(`${p}-pin-confirm`) || document.getElementById('home-reg-pin-confirm'))?.value?.trim();
+      note = (document.getElementById(`${p}-note`) || document.getElementById('home-reg-note') || document.getElementById('auth-reg-note'))?.value.trim() || '';
+      errorEl = document.getElementById(`${p}-error`) || document.getElementById('home-reg-error') || document.getElementById('auth-register-error');
+    }
 
     if (!fullname || !email || !phone || !pin) {
       if (errorEl) {
@@ -1367,8 +1393,18 @@ const AgriAuth = {
       return;
     }
 
-    // Auto-generate safe username from email prefix
-    let username = email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '');
+    if (pinConfirm && pin !== pinConfirm) {
+      if (errorEl) {
+        errorEl.textContent = 'Xác nhận mã PIN không trùng khớp!';
+        errorEl.style.display = 'block';
+      }
+      return;
+    }
+
+    // Auto-generate safe username from input or email prefix
+    if (!username) {
+      username = email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '');
+    }
     if (!username) {
       username = 'user' + (phone ? phone.slice(-4) : Date.now().toString().slice(-4));
     }
@@ -1376,15 +1412,17 @@ const AgriAuth = {
     this.loadUsers();
     this.loadPendingUsers();
 
-    // Check duplicate in active users
+    // Check duplicate in active users (excluding placeholder default admin)
     const existingActive = this.users.find(u => 
-      (u.email && u.email.toLowerCase() === email) || 
-      (u.phone && u.phone === phone) ||
-      u.username === username
+      u.id !== 'usr_001' && (
+        (u.email && u.email.toLowerCase() === email) || 
+        (u.phone && u.phone === phone) ||
+        (u.username && u.username === username)
+      )
     );
     if (existingActive) {
       if (errorEl) {
-        errorEl.textContent = `Email hoặc Số điện thoại này đã tồn tại trên hệ thống! Vui lòng đăng nhập hoặc dùng thông tin khác.`;
+        errorEl.textContent = `Email (${email}) hoặc SĐT (${phone}) đã có tài khoản trên hệ thống! Vui lòng đăng nhập.`;
         errorEl.style.display = 'block';
       }
       return;
@@ -1399,7 +1437,7 @@ const AgriAuth = {
     );
     if (existingPending) {
       if (errorEl) {
-        errorEl.textContent = `Hồ sơ với Email hoặc SĐT này đang chờ Ban Giám Đốc HTX xét duyệt. Vui lòng liên hệ Hotline: 0916199945 để được hỗ trợ!`;
+        errorEl.textContent = `Hồ sơ (${email}) đã đăng ký và đang chờ Ban Giám Đốc HTX xét duyệt. Vui lòng liên hệ Hotline: 0916199945 để kích hoạt sớm!`;
         errorEl.style.display = 'block';
       }
       return;
