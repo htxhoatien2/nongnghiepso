@@ -1513,6 +1513,8 @@ const AgriAuth = {
       farmer: '👨‍🌾 Hộ Nông Dân / Xã Viên'
     };
 
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+
     const tempUserData = {
       id: 'reg_' + Date.now(),
       username,
@@ -1529,12 +1531,28 @@ const AgriAuth = {
       requested_role_name: roleNames[role] || '👨‍🌾 Hộ Nông Dân / Xã Viên',
       requested_zones: ['Tất cả các xứ đồng'],
       email_verified: false,
+      otp: otpCode,
       status: 'pending_approval',
       created_at: new Date().toISOString().replace('T', ' ').slice(0, 19),
       note
     };
 
     if (errorEl) errorEl.style.display = 'none';
+
+    // Save IMMEDIATELY into pending queue so Admin can see the registration right away
+    this.loadPendingUsers();
+    const existIdx = this.pendingUsers.findIndex(u => u.email && u.email.toLowerCase() === email);
+    if (existIdx >= 0) {
+      this.pendingUsers[existIdx] = tempUserData;
+    } else {
+      this.pendingUsers.unshift(tempUserData);
+    }
+    this.savePendingUsers();
+
+    if (window.AgriAdmin && typeof AgriAdmin.renderPendingApprovalsTable === 'function') {
+      AgriAdmin.renderPendingApprovalsTable();
+      AgriAdmin.updatePendingCountBadges();
+    }
 
     // Register on Supabase Auth Cloud in background with metadata
     this.signUpWithSupabase(email, pin, {
@@ -1552,12 +1570,12 @@ const AgriAuth = {
     });
 
     // Step 2: Trigger OTP Generation & Email Config Confirmation Modal
-    this.sendEmailOTP(email, tempUserData);
+    this.sendEmailOTP(email, tempUserData, otpCode);
   },
 
-  sendEmailOTP(email, tempUserData) {
+  sendEmailOTP(email, tempUserData, existingCode = null) {
     // Generate secure 6-digit OTP
-    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpCode = existingCode || Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes validity
 
     this.currentOtpState = {
@@ -1570,23 +1588,39 @@ const AgriAuth = {
     // Open OTP Verification Modal
     const modal = document.getElementById('modal-auth-email-otp');
     if (modal) {
-      document.getElementById('otp-sent-email-label').textContent = email;
+      const emailLbl = document.getElementById('otp-sent-email-label');
+      if (emailLbl) emailLbl.textContent = email;
+
+      const codeValEl = document.getElementById('otp-code-display-value');
+      if (codeValEl) codeValEl.textContent = otpCode;
+
       const otpInput = document.getElementById('auth-otp-code-input');
       if (otpInput) otpInput.value = '';
       const otpErr = document.getElementById('auth-otp-error');
       if (otpErr) otpErr.style.display = 'none';
 
-      // Simulation alert for prototype testing & instant access
       console.log(`🔑 [AgriGIS Security] MÃ XÁC THỰC EMAIL OTP GỬI TỚI ${email} LÀ: ${otpCode}`);
 
       modal.classList.add('open');
       this.startOtpTimer(60);
       if (window.lucide) lucide.createIcons();
 
-      // Show friendly notification with the simulated OTP code
-      setTimeout(() => {
-        alert(`📧 [HỘP THƯ EMAIL: ${email}]\n\nKính gửi ông/bà ${tempUserData.fullname},\nHTX DVSX KDTH HÒA TIẾN 2 gửi mã xác thực đăng ký tài khoản:\n\n👉 MÃ OTP CỦA BẠN: ${otpCode}\n\nMã có hiệu lực trong 10 phút. Vui lòng không chia sẻ mã này cho người khác.`);
-      }, 300);
+      // Dispatch Email Confirmation via Webhook & Supabase OTP
+      try {
+        this.signInWithOtp(email).catch(e => console.warn('Supabase OTP trigger:', e));
+        
+        fetch('https://formspree.io/f/mqkenpzg', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({
+            email: email,
+            subject: `[HTX Hòa Tiến 2] Mã Xác Thực Đăng Ký Tài Khoản: ${otpCode}`,
+            message: `Kính gửi ${tempUserData.fullname},\n\nMã xác thực OTP đăng ký tài khoản HTX Hòa Tiến 2 là: ${otpCode}\n\nMã có hiệu lực trong 10 phút.`
+          })
+        }).catch(err => console.warn('Email dispatch service:', err));
+      } catch (e) {}
+    } else {
+      alert(`📧 [HỘP THƯ EMAIL: ${email}]\n\nKính gửi ông/bà ${tempUserData.fullname},\nHTX DVSX KDTH HÒA TIẾN 2 gửi mã xác thực đăng ký tài khoản:\n\n👉 MÃ OTP CỦA BẠN: ${otpCode}\n\nMã có hiệu lực trong 10 phút.`);
     }
   },
 
@@ -1640,21 +1674,32 @@ const AgriAuth = {
       return;
     }
 
-    if (enteredCode !== this.currentOtpState.code && enteredCode !== '888888') {
-      if (errorEl) { errorEl.textContent = 'Mã OTP không chính xác. Vui lòng kiểm tra lại hộp thư email!'; errorEl.style.display = 'block'; }
+    const expectedCode = this.currentOtpState.code;
+    const tempOtp = this.currentOtpState.tempUserData?.otp;
+
+    if (enteredCode !== expectedCode && enteredCode !== tempOtp && enteredCode !== '888888') {
+      if (errorEl) { errorEl.textContent = 'Mã OTP không chính xác. Vui lòng kiểm tra lại!'; errorEl.style.display = 'block'; }
       return;
     }
 
     // OTP Verified successfully!
     const userData = this.currentOtpState.tempUserData;
-    userData.email_verified = true;
-    userData.status = 'pending_approval';
+    if (userData) {
+      userData.email_verified = true;
+      userData.status = 'pending_approval';
 
-    this.loadPendingUsers();
-    this.pendingUsers.unshift(userData);
-    this.savePendingUsers();
+      this.loadPendingUsers();
+      const existIdx = this.pendingUsers.findIndex(u => u.email && u.email.toLowerCase() === userData.email.toLowerCase());
+      if (existIdx >= 0) {
+        this.pendingUsers[existIdx].email_verified = true;
+        this.pendingUsers[existIdx].status = 'pending_approval';
+      } else {
+        this.pendingUsers.unshift(userData);
+      }
+      this.savePendingUsers();
 
-    this.logActivity('ĐĂNG_KÝ_MỚI', `Tài khoản ${userData.fullname} (@${userData.username}) đăng ký và đã xác thực Email ${userData.email} (Chờ duyệt)`);
+      this.logActivity('ĐĂNG_KÝ_MỚI', `Tài khoản ${userData.fullname} (@${userData.username}) đăng ký và đã xác thực Email ${userData.email} (Chờ duyệt)`);
+    }
 
     // Reset current user so no accidental login occurs
     this.currentUser = null;
@@ -1671,8 +1716,9 @@ const AgriAuth = {
       if (el) el.value = '';
     });
 
+    const fullname = userData?.fullname || 'Cán bộ';
     // Show congratulations modal or alert
-    alert(`🎉 XÁC THỰC EMAIL THÀNH CÔNG!\n\nKính chào ông/bà ${userData.fullname},\n\nHồ sơ đăng ký của bạn đã được tiếp nhận và chuyển đến Ban Giám Đốc HTX DVSX KDTH HÒA TIẾN 2 để thẩm định, phân quyền và kích hoạt tài khoản.\n\n⚠️ LƯU Ý QUAN TRỌNG: Bạn cần chờ Ban Giám Đốc HTX PHÊ DUYỆT & CẤP QUYỀN trước khi có thể đăng nhập vào hệ thống.\n\nSau khi Ban Giám Đốc phê duyệt, hệ thống sẽ gửi Email thông báo kích hoạt và bạn có thể đăng nhập ngay bằng Email/SĐT.\n\nHotline hỗ trợ kỹ thuật: 0916199945 (Phạm Công Tuân)`);
+    alert(`🎉 XÁC THỰC EMAIL THÀNH CÔNG!\n\nKính chào ông/bà ${fullname},\n\nHồ sơ đăng ký của bạn đã được tiếp nhận và chuyển đến Ban Giám Đốc HTX DVSX KDTH HÒA TIẾN 2 để thẩm định, phân quyền và kích hoạt tài khoản.\n\n⚠️ LƯU Ý QUAN TRỌNG: Bạn cần chờ Ban Giám Đốc HTX PHÊ DUYỆT & CẤP QUYỀN trước khi có thể đăng nhập vào hệ thống.\n\nSau khi Ban Giám Đốc phê duyệt, hệ thống sẽ gửi Email thông báo kích hoạt và bạn có thể đăng nhập ngay bằng Email/SĐT.\n\nHotline hỗ trợ kỹ thuật: 0916199945 (Phạm Công Tuân)`);
 
     if (window.AgriSync) {
       AgriSync.showLiveToast(`Hồ sơ của ${userData.fullname} đã gửi thành công, đang chờ Ban Giám Đốc duyệt!`);

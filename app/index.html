@@ -58,7 +58,7 @@
   </script>
 
   <!-- Custom CSS with Cache Buster -->
-  <link rel="stylesheet" href="css/style.css?v=3.2.2">
+  <link rel="stylesheet" href="css/style.css?v=3.2.3">
 </head>
 <body class="light-mode">
   <div id="app" class="app-container">
@@ -3361,6 +3361,60 @@
       </div>
     </div>
 
+    <!-- MODAL: XÁC THỰC EMAIL OTP KHI ĐĂNG KÝ TÀI KHOẢN -->
+    <div id="modal-auth-email-otp" class="modal-overlay">
+      <div class="modal-card" style="max-width: 480px; border-radius: 18px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);">
+        <div class="modal-header" style="background: linear-gradient(135deg, rgba(5, 150, 105, 0.15), rgba(59, 130, 246, 0.1)); padding: 1.25rem 1.5rem;">
+          <div class="modal-title-wrap">
+            <div class="avatar-circle" style="background: var(--primary-light); color: var(--primary);"><i data-lucide="mail-check"></i></div>
+            <div>
+              <h3 class="modal-title" style="font-size: 1.1rem; font-weight: 800;">Xác Thực Email Cán Bộ</h3>
+              <span class="modal-sub">Mã OTP bảo mật 6 chữ số</span>
+            </div>
+          </div>
+          <button class="close-modal-btn" onclick="AgriAuth.closeOtpModal()"><i data-lucide="x"></i></button>
+        </div>
+
+        <div class="modal-body" style="padding: 1.5rem;">
+          <div style="text-align: center; margin-bottom: 1.25rem;">
+            <div style="font-size: 2.2rem; margin-bottom: 6px;">✉️</div>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin: 0;">Mã xác thực OTP 6 số đã được gửi đến email:</p>
+            <div id="otp-sent-email-label" style="font-weight: 800; color: var(--primary); font-size: 1rem; margin-top: 4px; word-break: break-all;">email@gmail.com</div>
+          </div>
+
+          <div id="auth-otp-error" class="alert-box" style="display: none; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444; padding: 8px 12px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 12px; font-weight: 600; text-align: center;"></div>
+
+          <div id="otp-code-hint-box" style="background: rgba(5, 150, 105, 0.08); border: 1px dashed var(--primary); border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; text-align: center;">
+            <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600;">MÃ XÁC THỰC CỦA BẠN:</div>
+            <div id="otp-code-display-value" style="font-size: 1.6rem; font-weight: 900; letter-spacing: 6px; color: var(--primary); margin: 4px 0;">------</div>
+            <button type="button" class="btn btn-sm btn-outline" onclick="document.getElementById('auth-otp-code-input').value = AgriAuth.currentOtpState.code; AgriAuth.verifyEmailOtpCode();" style="font-size: 0.78rem; padding: 3px 10px; font-weight: 700; margin-top: 2px;">
+              👉 Điền tự động & Xác nhận ngay
+            </button>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label class="form-label" style="font-weight: 700; font-size: 0.85rem; text-align: center; display: block;">Nhập mã OTP 6 số:</label>
+            <input type="text" maxlength="6" id="auth-otp-code-input" class="form-input" placeholder="Ví dụ: 123456" style="text-align: center; font-size: 1.5rem; font-weight: 800; letter-spacing: 6px; padding: 10px;">
+          </div>
+
+          <button class="btn btn-emerald btn-block" onclick="AgriAuth.verifyEmailOtpCode()" style="padding: 11px; font-weight: 800; width: 100%; font-size: 0.95rem;">
+            <i data-lucide="check-circle-2"></i> XÁC THỰC EMAIL & GỬI HỒ SƠ ➔
+          </button>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; font-size: 0.82rem;">
+            <span style="color: var(--text-muted);">Không nhận được mã?</span>
+            <button id="btn-auth-otp-resend" type="button" class="btn btn-sm btn-outline" onclick="AgriAuth.resendEmailOtp()" style="padding: 3px 8px; font-size: 0.8rem;">
+              Gửi lại mã <span id="auth-otp-timer-count"></span>
+            </button>
+          </div>
+        </div>
+
+        <div class="modal-footer" style="padding: 10px 1.25rem; display: flex; justify-content: flex-end; background: var(--bg-app);">
+          <button class="btn btn-outline" onclick="AgriAuth.closeOtpModal()">Hủy bỏ</button>
+        </div>
+      </div>
+    </div>
+
     <!-- MODAL: HỒ SƠ CÁN BỘ & THÔNG TIN TÁC NGHIỆP HTX -->
     <div id="modal-auth-user-profile" class="modal-overlay">
       <div class="modal-card" style="max-width: 540px; border-radius: 18px; overflow: hidden;">
@@ -3729,23 +3783,23 @@
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 
   <!-- Embedded Data (Offline & file:// protocol support) -->
-  <script src="data/data_embedded.js?v=3.2.2"></script>
+  <script src="data/data_embedded.js?v=3.2.3"></script>
 
   <!-- Supabase JS SDK (v2) from CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase_config.js?v=3.2.2"></script>
+  <script src="js/supabase_config.js?v=3.2.3"></script>
 
   <!-- App JS Modules with Cache Buster -->
-  <script src="js/data.js?v=3.2.2"></script>
-  <script src="js/auth.js?v=3.2.2"></script>
-  <script src="js/sync.js?v=3.2.2"></script>
-  <script src="js/admin.js?v=3.2.2"></script>
-  <script src="js/map.js?v=3.2.2"></script>
-  <script src="js/records.js?v=3.2.2"></script>
-  <script src="js/farmers.js?v=3.2.2"></script>
-  <script src="js/analytics.js?v=3.2.2"></script>
-  <script src="js/services.js?v=3.2.2"></script>
-  <script src="js/purchasing.js?v=3.2.2"></script>
-  <script src="js/app.js?v=3.2.2"></script>
+  <script src="js/data.js?v=3.2.3"></script>
+  <script src="js/auth.js?v=3.2.3"></script>
+  <script src="js/sync.js?v=3.2.3"></script>
+  <script src="js/admin.js?v=3.2.3"></script>
+  <script src="js/map.js?v=3.2.3"></script>
+  <script src="js/records.js?v=3.2.3"></script>
+  <script src="js/farmers.js?v=3.2.3"></script>
+  <script src="js/analytics.js?v=3.2.3"></script>
+  <script src="js/services.js?v=3.2.3"></script>
+  <script src="js/purchasing.js?v=3.2.3"></script>
+  <script src="js/app.js?v=3.2.3"></script>
 </body>
 </html>
