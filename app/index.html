@@ -58,7 +58,7 @@
   </script>
 
   <!-- Custom CSS with Cache Buster -->
-  <link rel="stylesheet" href="css/style.css?v=3.1.4">
+  <link rel="stylesheet" href="css/style.css?v=3.1.7">
 </head>
 <body class="light-mode">
   <div id="app" class="app-container">
@@ -2821,103 +2821,105 @@
 
     <!-- MODAL: PHIÊN CÂN LÚA THU MUA THÔNG MINH MOBILE-FIRST (WEIGHING SESSION DIALOG) -->
     <div id="modal-weighing-session" class="modal-overlay">
-      <div class="modal-card modal-lg" style="max-width: 680px; max-height: 96vh; display: flex; flex-direction: column; border-radius: var(--radius-lg);">
-        <!-- Mobile Header Bar -->
-        <div class="modal-header" style="background: linear-gradient(135deg, rgba(5, 150, 105, 0.15), rgba(59, 130, 246, 0.1)); padding: 12px 1rem;">
+      <div class="modal-card modal-lg weigh-modal-container">
+        <!-- Modal Header -->
+        <div class="modal-header weigh-modal-header">
           <div class="modal-title-wrap">
-            <div class="avatar-circle" style="background: var(--primary); color: #fff; width: 36px; height: 36px; font-size: 1.1rem;"><i data-lucide="scale"></i></div>
+            <div class="weigh-avatar-icon"><i data-lucide="scale"></i></div>
             <div>
-              <h3 id="modal-weighing-title" class="modal-title" style="font-size: 1.05rem;">Phiên Cân Lúa Thu Mua</h3>
-              <span id="modal-weighing-sub" class="modal-sub" style="font-size: 0.76rem;">Ghi mẻ cân nhanh trên điện thoại & tự tính thành tiền</span>
+              <h3 id="modal-weighing-title" class="weigh-header-title">Phiên Cân Lúa Thu Mua</h3>
+              <span id="modal-weighing-sub" class="weigh-header-sub">Ghi mẻ cân trực tiếp tại ruộng & tự động tính toán thành tiền</span>
             </div>
           </div>
-          <button class="close-modal-btn" onclick="AgriPurchasing.closeSessionModal()"><i data-lucide="x"></i></button>
+          <button class="btn-sheet-close" onclick="AgriPurchasing.closeSessionModal()" title="Đóng cửa sổ"><i data-lucide="x"></i></button>
         </div>
 
-        <div class="modal-body" style="overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 10px;">
+        <div class="modal-body weigh-modal-body">
           <input type="hidden" id="weighing-session-id">
 
-          <!-- Section 1: Thông Tin Chung (Gọn gàng, dễ chọn trên điện thoại) -->
-          <div style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 10px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-              <span style="font-weight: 800; font-size: 0.8rem; color: var(--primary); display: flex; align-items: center; gap: 4px;">
-                <i data-lucide="user"></i> Hộ Nông Dân & Địa Bàn
+          <!-- Section 1: Thông Tin Hộ Dân & Địa Bàn -->
+          <div class="weigh-section-card">
+            <div class="weigh-sec-header">
+              <span class="weigh-sec-title">
+                <i data-lucide="user-check"></i> HỘ NÔNG DÂN & ĐỊA BÀN
               </span>
-              <span id="weighing-session-stt-badge" class="badge badge-emerald" style="font-size: 0.82rem; font-weight: 800; padding: 3px 8px;">Phiên #1</span>
+              <span id="weighing-session-stt-badge" class="weigh-stt-pill">Phiên #1</span>
               <input type="hidden" id="weighing-session-stt">
               <input type="hidden" id="weighing-session-datetime">
             </div>
 
-            <!-- Tên Hộ & Datalist gợi ý 280 hộ -->
-            <div class="form-group" style="margin-bottom: 8px;">
-              <input type="text" id="weighing-farmer-input" list="weighing-farmers-datalist" placeholder="🔍 Nhập hoặc chọn Hộ Sản Xuất (Chủ lúa)..." 
-                     style="width: 100%; padding: 10px 12px; font-size: 1rem; font-weight: 700; border-radius: 8px; border: 2px solid var(--primary); background: var(--bg-surface); color: var(--text-main);" 
+            <!-- Tên Hộ & Datalist gợi ý -->
+            <div class="weigh-farmer-search-box">
+              <i data-lucide="search" class="weigh-search-ico"></i>
+              <input type="text" id="weighing-farmer-input" list="weighing-farmers-datalist" placeholder="Nhập hoặc chọn Hộ Sản Xuất (Chủ lúa)..." 
+                     class="weigh-farmer-input"
                      oninput="AgriPurchasing.onFarmerInput()" onchange="AgriPurchasing.onFarmerSelect()">
               <datalist id="weighing-farmers-datalist">
                 <!-- Dynamically populated from 280 farmers -->
               </datalist>
             </div>
 
-            <!-- Xứ Đồng (Danh sách sổ xuống) & Địa Bàn & Số Điện Thoại -->
-            <div style="margin-top: 6px;">
-              <div style="display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 6px;">
-                <div>
-                  <select id="weighing-zone-select" class="select-wrap" 
-                          style="width: 100%; padding: 8px 10px; font-size: 0.88rem; font-weight: 700; border-radius: 6px; border: 1.5px solid var(--primary); background: var(--bg-surface); color: var(--text-main);"
-                          onchange="AgriPurchasing.onZoneSelectChange()">
-                    <!-- Populated dynamically from 85 zones in CSDL -->
-                  </select>
-                </div>
-                <div>
-                  <input type="text" id="weighing-farmer-address" placeholder="Tổ dân phố" style="width: 100%; padding: 8px 10px; font-size: 0.82rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main);">
-                </div>
-                <div>
-                  <input type="text" id="weighing-farmer-phone" placeholder="Số điện thoại" style="width: 100%; padding: 8px 10px; font-size: 0.82rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main);">
-                </div>
+            <!-- Lưới Xứ Đồng & Địa Bàn & Số Điện Thoại -->
+            <div class="weigh-field-grid-3">
+              <div class="weigh-field-col">
+                <label class="weigh-micro-lbl"><i data-lucide="map-pin"></i> Xứ Đồng</label>
+                <select id="weighing-zone-select" class="weigh-select" onchange="AgriPurchasing.onZoneSelectChange()">
+                  <!-- Populated dynamically from 85 zones -->
+                </select>
+              </div>
+              <div class="weigh-field-col">
+                <label class="weigh-micro-lbl"><i data-lucide="home"></i> Tổ Dân Phố</label>
+                <input type="text" id="weighing-farmer-address" placeholder="Tổ dân phố" class="weigh-input-sub">
+              </div>
+              <div class="weigh-field-col">
+                <label class="weigh-micro-lbl"><i data-lucide="phone"></i> Điện Thoại</label>
+                <input type="text" id="weighing-farmer-phone" placeholder="Số điện thoại" class="weigh-input-sub">
               </div>
             </div>
 
             <!-- Cán Bộ Cân & Xe Nhận Vận Chuyển -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px;">
-              <div>
-                <input type="text" id="weighing-officer-input" placeholder="👨‍🌾 Cán bộ cân phụ trách..." style="width: 100%; padding: 7px 8px; font-size: 0.82rem; font-weight: 600; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main);">
+            <div class="weigh-field-grid-2">
+              <div class="weigh-field-col">
+                <label class="weigh-micro-lbl"><i data-lucide="user"></i> Cán Bộ Cân Phụ Trách</label>
+                <input type="text" id="weighing-officer-input" placeholder="Tên cán bộ cân..." class="weigh-input-sub">
               </div>
-              <div>
-                <input type="text" id="weighing-truck-input" placeholder="🚚 Xe nhận (Xe A, 43C...)" style="width: 100%; padding: 7px 8px; font-size: 0.82rem; font-weight: 600; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main);">
+              <div class="weigh-field-col">
+                <label class="weigh-micro-lbl"><i data-lucide="truck"></i> Xe Nhận Vận Chuyển</label>
+                <input type="text" id="weighing-truck-input" placeholder="Xe A (43C-089.12)..." class="weigh-input-sub">
               </div>
             </div>
           </div>
 
-          <!-- Section 2: Chọn Nhanh Loại Giống Lúa (1-tap variety chips) -->
-          <div style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 8px 10px;">
-            <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">
-              🌾 CHỌN GIỐNG LÚA THU MUA:
+          <!-- Section 2: Chọn Nhanh Giống Lúa Thu Mua -->
+          <div class="weigh-section-card">
+            <div class="weigh-variety-header">
+              <span class="weigh-sec-title"><i data-lucide="sprout"></i> CHỌN GIỐNG LÚA THU MUA:</span>
             </div>
-            <div class="variety-chips-grid" id="weighing-variety-chips" style="display: flex; flex-wrap: wrap; gap: 6px;">
-              <button type="button" class="variety-chip active" data-variety="J02" onclick="AgriPurchasing.selectVariety('J02')">J02</button>
-              <button type="button" class="variety-chip" data-variety="HG12" onclick="AgriPurchasing.selectVariety('HG12')">HG12</button>
-              <button type="button" class="variety-chip" data-variety="HG244" onclick="AgriPurchasing.selectVariety('HG244')">HG244</button>
-              <button type="button" class="variety-chip" data-variety="ĐT100" onclick="AgriPurchasing.selectVariety('ĐT100')">ĐT100</button>
-              <button type="button" class="variety-chip" data-variety="HT1" onclick="AgriPurchasing.selectVariety('HT1')">HT1</button>
-              <button type="button" class="variety-chip" data-variety="ST25" onclick="AgriPurchasing.selectVariety('ST25')">ST25</button>
+            <div class="weigh-variety-pills-row" id="weighing-variety-chips">
+              <button type="button" class="variety-pill active" data-variety="J02" onclick="AgriPurchasing.selectVariety('J02')">J02</button>
+              <button type="button" class="variety-pill" data-variety="HG12" onclick="AgriPurchasing.selectVariety('HG12')">HG12</button>
+              <button type="button" class="variety-pill" data-variety="HG244" onclick="AgriPurchasing.selectVariety('HG244')">HG244</button>
+              <button type="button" class="variety-pill" data-variety="ĐT100" onclick="AgriPurchasing.selectVariety('ĐT100')">ĐT100</button>
+              <button type="button" class="variety-pill" data-variety="HT1" onclick="AgriPurchasing.selectVariety('HT1')">HT1</button>
+              <button type="button" class="variety-pill" data-variety="ST25" onclick="AgriPurchasing.selectVariety('ST25')">ST25</button>
             </div>
             <input type="hidden" id="weighing-variety-select" value="J02">
           </div>
 
-          <!-- Section 3: Bàn Cân Nhập Nhanh Mẻ Cân Tại Ruộng (Mobile Weighing Pad) -->
-          <div style="background: linear-gradient(135deg, rgba(5, 150, 105, 0.06), transparent); border: 2px solid var(--primary); border-radius: var(--radius-md); padding: 10px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <strong style="font-size: 0.85rem; color: var(--primary-dark); display: flex; align-items: center; gap: 4px;">
+          <!-- Section 3: Bàn Cân Nhập Mẻ Siêu Tốc Tại Ruộng -->
+          <div class="weigh-terminal-box">
+            <div class="weigh-terminal-top">
+              <strong class="weigh-terminal-title">
                 <i data-lucide="calculator"></i> NHẬP MẺ CÂN TẠI RUỘNG
               </strong>
-              <span id="weighing-live-batches-count" style="font-size: 0.78rem; font-weight: 700; color: var(--primary);">Đã cân: 0 mẻ</span>
+              <span id="weighing-live-batches-count" class="weigh-batch-count-badge">Đã cân: 0 mẻ</span>
             </div>
 
-            <!-- Hàng phím chọn nhanh số bao & ô nhập Kg -->
-            <div style="display: flex; flex-direction: column; gap: 6px; background: var(--bg-surface); padding: 8px; border-radius: 8px; border: 1px solid var(--border-color);">
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">Số bao mẻ này (tối đa 3 bao):</span>
-                <div class="bag-quick-select" id="bag-quick-btns" style="display: flex; gap: 6px;">
+            <!-- Bảng Nhập Mẻ POS Cực Nhạy -->
+            <div class="weigh-input-action-card">
+              <div class="weigh-bag-select-row">
+                <span class="weigh-bag-lbl">Số bao mẻ này:</span>
+                <div class="weigh-bag-toggles" id="bag-quick-btns">
                   <button type="button" class="bag-btn" onclick="AgriPurchasing.setQuickBag(1)">1 bao</button>
                   <button type="button" class="bag-btn active" onclick="AgriPurchasing.setQuickBag(2)">2 bao</button>
                   <button type="button" class="bag-btn" onclick="AgriPurchasing.setQuickBag(3)">3 bao</button>
@@ -2925,88 +2927,92 @@
                 <input type="hidden" id="quick-bag-count" value="2">
               </div>
 
-              <div style="display: flex; gap: 6px; align-items: center;">
-                <div style="flex: 1; position: relative;">
-                  <input type="number" id="quick-kg-input" min="0" step="0.5" placeholder="Nhập số Kg mẻ..." 
-                         style="width: 100%; padding: 10px 12px; font-size: 1.3rem; font-weight: 800; text-align: center; border-radius: 8px; border: 2px solid var(--border-color); background: var(--bg-surface); color: var(--primary);" 
+              <div class="weigh-kg-row">
+                <div class="weigh-kg-input-wrapper">
+                  <input type="number" id="quick-kg-input" min="0" step="0.5" placeholder="Nhập số Kg..." 
+                         class="weigh-digital-kg-input"
                          onkeydown="if(event.key==='Enter'){ event.preventDefault(); AgriPurchasing.addQuickBatch(); }">
-                  <span style="position: absolute; right: 12px; top: 12px; font-weight: 700; color: var(--text-muted); font-size: 0.85rem;">KG</span>
+                  <span class="weigh-unit-tag">KG</span>
                 </div>
-                <button type="button" class="btn btn-emerald" style="height: 48px; padding: 0 16px; font-size: 0.95rem; font-weight: 700; display: flex; align-items: center; gap: 6px; border-radius: 8px;" onclick="AgriPurchasing.addQuickBatch()">
+                <button type="button" class="btn-weigh-add-batch" onclick="AgriPurchasing.addQuickBatch()">
                   <i data-lucide="plus-circle"></i> <span>Thêm Mẻ</span>
                 </button>
               </div>
             </div>
 
-            <!-- Danh Sách Các Mẻ Đã Cân (Cuộn mượt mà dạng thẻ) -->
-            <div style="margin-top: 8px;">
-              <div style="max-height: 140px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px;" id="weighing-batches-list-container">
+            <!-- Danh Sách Các Mẻ Đã Cân -->
+            <div class="weigh-batches-scroll-area">
+              <div id="weighing-batches-list-container" class="weigh-batches-list">
                 <!-- Dynamically rendered batch chips -->
               </div>
             </div>
           </div>
 
-          <!-- Section 4: Thanh Quyết Toán Tài Chính Tương Phản Cao (High Contrast Field Result) -->
-          <div style="background: linear-gradient(135deg, #1e293b, #0f172a); color: #fff; border-radius: 10px; padding: 12px; box-shadow: var(--shadow-md);">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding-bottom: 8px; border-bottom: 1px dashed rgba(255,255,255,0.2);">
-              <div>
-                <span style="font-size: 0.72rem; color: #94a3b8; display: block;">1. TỔNG LƯỢNG TƯƠI</span>
-                <strong id="weighing-calc-fresh-kg" style="font-size: 1.25rem; color: #38bdf8;">0 kg</strong>
-                <small id="weighing-calc-total-bags" style="color: #cbd5e1; display: block; font-size: 0.75rem;">(0 bao)</small>
+          <!-- Section 4: Bảng Quyết Toán Tài Chính Dark Modern -->
+          <div class="weigh-settlement-terminal">
+            <div class="weigh-summary-grid">
+              <div class="weigh-sum-card">
+                <span class="weigh-sum-lbl">1. TỔNG LƯỢNG TƯƠI</span>
+                <strong id="weighing-calc-fresh-kg" class="weigh-val-fresh">0 kg</strong>
+                <small id="weighing-calc-total-bags" class="weigh-sub-bags">(0 bao)</small>
               </div>
-              <div>
-                <span style="font-size: 0.72rem; color: #94a3b8; display: block;">2. TRỪ ĐỘ ẨM / TẠP</span>
-                <div style="display: flex; align-items: center; gap: 4px; margin-top: 2px;">
+              <div class="weigh-sum-card">
+                <span class="weigh-sum-lbl">2. TRỪ ĐỘ ẨM / TẠP</span>
+                <div class="weigh-deduct-group">
                   <input type="number" id="weighing-calc-deduct-pct" min="0" max="50" step="0.5" value="12" 
-                         style="width: 55px; padding: 3px 4px; font-weight: 800; font-size: 0.95rem; text-align: center; border-radius: 4px; border: 1px solid #475569; background: #334155; color: #f87171;" 
+                         class="weigh-deduct-input"
                          oninput="AgriPurchasing.recalculateSession()">
-                  <span style="font-weight: 700; color: #f87171; font-size: 0.85rem;">%</span>
-                  <small id="weighing-calc-deduct-kg" style="color: #94a3b8; font-size: 0.72rem;">(-0 kg)</small>
+                  <span class="weigh-deduct-sym">%</span>
+                  <small id="weighing-calc-deduct-kg" class="weigh-deduct-kg">(-0 kg)</small>
                 </div>
               </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 8px 0; border-bottom: 1px dashed rgba(255,255,255,0.2);">
-              <div>
-                <span style="font-size: 0.72rem; color: #94a3b8; display: block;">3. LƯỢNG KHÔ QUY ĐỔI</span>
-                <strong id="weighing-calc-dry-kg" style="font-size: 1.25rem; color: #4ade80;">0 kg</strong>
+            <div class="weigh-summary-grid divider-top">
+              <div class="weigh-sum-card">
+                <span class="weigh-sum-lbl">3. LƯỢNG KHÔ QUY ĐỔI</span>
+                <strong id="weighing-calc-dry-kg" class="weigh-val-dry">0 kg</strong>
               </div>
-              <div>
-                <span style="font-size: 0.72rem; color: #94a3b8; display: block;">4. ĐƠN GIÁ (đ/kg)</span>
-                <div style="display: flex; align-items: center; gap: 4px; margin-top: 2px;">
-                  <button type="button" style="width: 24px; height: 24px; background: #334155; border: 1px solid #475569; color: #fff; border-radius: 4px; cursor: pointer; font-weight: 800;" onclick="AgriPurchasing.adjustUnitPrice(-100)">-</button>
+              <div class="weigh-sum-card">
+                <span class="weigh-sum-lbl">4. ĐƠN GIÁ (đ/kg)</span>
+                <div class="weigh-price-stepper">
+                  <button type="button" class="btn-step" onclick="AgriPurchasing.adjustUnitPrice(-100)">-</button>
                   <input type="number" id="weighing-calc-unit-price" min="0" step="100" placeholder="8500" 
-                         style="width: 75px; padding: 3px 4px; font-weight: 800; font-size: 0.95rem; text-align: center; border-radius: 4px; border: 1px solid #475569; background: #334155; color: #fbbf24;" 
+                         class="weigh-price-input"
                          oninput="AgriPurchasing.recalculateSession()">
-                  <button type="button" style="width: 24px; height: 24px; background: #334155; border: 1px solid #475569; color: #fff; border-radius: 4px; cursor: pointer; font-weight: 800;" onclick="AgriPurchasing.adjustUnitPrice(100)">+</button>
+                  <button type="button" class="btn-step" onclick="AgriPurchasing.adjustUnitPrice(100)">+</button>
                 </div>
               </div>
             </div>
 
             <!-- Tổng Tiền Thanh Toán To Nổi Bật -->
-            <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 8px;">
-              <div>
-                <span style="font-size: 0.75rem; color: #cbd5e1; font-weight: 700; text-transform: uppercase;">💰 TỔNG THÀNH TIỀN:</span>
+            <div class="weigh-grand-total-row">
+              <div class="weigh-grand-total-lbl">
+                <span>💰 TỔNG THÀNH TIỀN:</span>
               </div>
               <div>
-                <strong id="weighing-calc-total-money" style="font-size: 1.45rem; color: #34d399; font-weight: 900; letter-spacing: -0.02em;">0 VNĐ</strong>
+                <strong id="weighing-calc-total-money" class="weigh-grand-total-val">0 VNĐ</strong>
               </div>
             </div>
           </div>
 
-          <div class="form-group" style="margin-bottom: 0;">
-            <input type="text" id="weighing-note-input" placeholder="Ghi chú thêm (chất lượng lúa, độ ẩm, thời tiết...)" style="width:100%; padding:7px 10px; font-size: 0.8rem; border-radius:6px; border:1px solid var(--border-color); background:var(--bg-surface); color:var(--text-main);">
+          <!-- Ghi Chú -->
+          <div class="weigh-note-wrap">
+            <input type="text" id="weighing-note-input" placeholder="📝 Ghi chú thêm (chất lượng lúa, độ ẩm, thời tiết, tạp chất...)" class="weigh-note-input">
           </div>
         </div>
 
-        <!-- Mobile Bottom Actions Footer (Nút to dễ chạm trên điện thoại) -->
-        <div class="modal-footer" style="padding: 10px 1rem; border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-          <button class="btn btn-outline" style="padding: 8px 12px;" onclick="AgriPurchasing.closeSessionModal()">Đóng</button>
-          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <button class="btn btn-outline" style="padding: 8px 12px;" onclick="AgriPurchasing.saveSessionAndPrint()" title="In phiếu giấy A4/A5"><i data-lucide="printer"></i> In Phiếu</button>
-            <button class="btn btn-emerald" style="padding: 8px 14px;" onclick="AgriPurchasing.saveSessionModal()"><i data-lucide="save"></i> Lưu</button>
-            <!-- Nút Lưu & Gửi Zalo nổi bật nhất -->
-            <button class="btn" style="background: #0068FF; color: #fff; font-weight: 800; padding: 8px 16px; border-radius: 8px; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(0, 104, 255, 0.35);" onclick="AgriPurchasing.saveSessionAndCopyZalo()">
+        <!-- Footer Hành Động Chuẩn Mobile & Desktop -->
+        <div class="modal-footer weigh-modal-footer">
+          <button class="btn btn-outline btn-weigh-close" onclick="AgriPurchasing.closeSessionModal()">Đóng</button>
+          <div class="weigh-footer-action-group">
+            <button class="btn btn-outline btn-weigh-print" onclick="AgriPurchasing.saveSessionAndPrint()" title="In phiếu giấy A4/A5">
+              <i data-lucide="printer"></i> <span>In Phiếu</span>
+            </button>
+            <button class="btn btn-emerald btn-weigh-save" onclick="AgriPurchasing.saveSessionModal()">
+              <i data-lucide="save"></i> <span>Lưu</span>
+            </button>
+            <button class="btn btn-weigh-zalo" onclick="AgriPurchasing.saveSessionAndCopyZalo()">
               <i data-lucide="message-circle"></i> <span>LƯU & GỬI ZALO</span>
             </button>
           </div>
@@ -3576,23 +3582,23 @@
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 
   <!-- Embedded Data (Offline & file:// protocol support) -->
-  <script src="data/data_embedded.js?v=3.1.6"></script>
+  <script src="data/data_embedded.js?v=3.1.7"></script>
 
   <!-- Supabase JS SDK (v2) from CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase_config.js?v=3.1.6"></script>
+  <script src="js/supabase_config.js?v=3.1.7"></script>
 
   <!-- App JS Modules with Cache Buster -->
-  <script src="js/data.js?v=3.1.6"></script>
-  <script src="js/auth.js?v=3.1.6"></script>
-  <script src="js/sync.js?v=3.1.6"></script>
-  <script src="js/admin.js?v=3.1.6"></script>
-  <script src="js/map.js?v=3.1.6"></script>
-  <script src="js/records.js?v=3.1.6"></script>
-  <script src="js/farmers.js?v=3.1.6"></script>
-  <script src="js/analytics.js?v=3.1.6"></script>
-  <script src="js/services.js?v=3.1.6"></script>
-  <script src="js/purchasing.js?v=3.1.6"></script>
-  <script src="js/app.js?v=3.1.6"></script>
+  <script src="js/data.js?v=3.1.7"></script>
+  <script src="js/auth.js?v=3.1.7"></script>
+  <script src="js/sync.js?v=3.1.7"></script>
+  <script src="js/admin.js?v=3.1.7"></script>
+  <script src="js/map.js?v=3.1.7"></script>
+  <script src="js/records.js?v=3.1.7"></script>
+  <script src="js/farmers.js?v=3.1.7"></script>
+  <script src="js/analytics.js?v=3.1.7"></script>
+  <script src="js/services.js?v=3.1.7"></script>
+  <script src="js/purchasing.js?v=3.1.7"></script>
+  <script src="js/app.js?v=3.1.7"></script>
 </body>
 </html>

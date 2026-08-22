@@ -458,27 +458,26 @@ const AgriPurchasing = {
     const countBadge = document.getElementById('weighing-live-batches-count');
     if (!container) return;
 
+    const totalBags = this.currentBatches.reduce((sum, b) => sum + (b.so_bao || 0), 0);
     if (countBadge) {
-      countBadge.textContent = `Đã cân: ${this.currentBatches.length} mẻ`;
+      countBadge.textContent = `Đã cân: ${this.currentBatches.length} mẻ (${totalBags} bao)`;
     }
 
     if (this.currentBatches.length === 0) {
-      container.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 0.78rem; padding: 12px; background: var(--bg-surface); border-radius: 6px; border: 1px dashed var(--border-subtle);">Chưa có mẻ cân nào. Nhập số Kg ở trên và bấm "Thêm Mẻ" (hoặc bấm Enter).</div>`;
+      container.innerHTML = `<div class="weigh-empty-batches-hint">Chưa có mẻ cân nào. Nhập số Kg ở trên và bấm "Thêm Mẻ" (hoặc bấm Enter).</div>`;
       return;
     }
 
     container.innerHTML = this.currentBatches.map((b, idx) => `
-      <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 5px 8px; font-size: 0.82rem;">
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span style="background: var(--bg-app); border: 1px solid var(--border-color); border-radius: 4px; padding: 1px 6px; font-weight: 800; font-size: 0.75rem; color: var(--text-muted);">Mẻ #${b.luot}</span>
-          <span style="font-weight: 600; color: var(--text-main);">${b.so_bao} bao</span>
-          <strong style="color: var(--primary); font-size: 0.92rem;">${Number(b.kg).toLocaleString('vi-VN')} kg</strong>
+      <div class="weigh-batch-item">
+        <div class="weigh-batch-left">
+          <span class="weigh-batch-tag">Mẻ #${b.luot}</span>
+          <span class="weigh-batch-bags">${b.so_bao} bao</span>
+          <strong class="weigh-batch-kg">${Number(b.kg).toLocaleString('vi-VN')} kg</strong>
         </div>
-        <div>
-          <button type="button" style="background: transparent; border: none; color: #ef4444; cursor: pointer; padding: 2px 6px; font-size: 0.85rem;" onclick="AgriPurchasing.removeBatchRow(${idx})" title="Xóa mẻ cân này">
-            <i data-lucide="trash-2" style="width: 13px; height: 13px;"></i>
-          </button>
-        </div>
+        <button type="button" class="btn-del-batch" onclick="AgriPurchasing.removeBatchRow(${idx})" title="Xóa mẻ cân này">
+          <i data-lucide="trash-2"></i>
+        </button>
       </div>
     `).join('');
 
@@ -488,21 +487,10 @@ const AgriPurchasing = {
   selectVariety(varName) {
     document.getElementById('weighing-variety-select').value = varName;
 
-    // Highlight chip
-    document.querySelectorAll('#weighing-variety-chips .variety-chip').forEach(btn => {
+    // Highlight pill / chip
+    document.querySelectorAll('#weighing-variety-chips .variety-pill, #weighing-variety-chips .variety-chip').forEach(btn => {
       const isMatch = btn.dataset.variety === varName;
       btn.classList.toggle('active', isMatch);
-      if (isMatch) {
-        btn.style.background = 'var(--primary)';
-        btn.style.color = '#fff';
-        btn.style.borderColor = 'var(--primary)';
-        btn.style.fontWeight = '800';
-      } else {
-        btn.style.background = 'var(--bg-app)';
-        btn.style.color = 'var(--text-main)';
-        btn.style.borderColor = 'var(--border-color)';
-        btn.style.fontWeight = '600';
-      }
     });
 
     // Load remembered price
