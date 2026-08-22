@@ -38,6 +38,7 @@ const AgriData = {
         
         this.ensureServiceItems();
         this.ensurePurchasingData();
+        this.recalculateKPIs();
         this.isLoaded = true;
         console.log('AgriData loaded from embedded storage:', {
           plots: this.data.plots.length,
@@ -66,6 +67,7 @@ const AgriData = {
 
       this.ensureServiceItems();
       this.ensurePurchasingData();
+      this.recalculateKPIs();
       this.isLoaded = true;
       console.log('AgriData loaded via fetch:', {
         plots: this.data.plots.length,
@@ -323,22 +325,55 @@ const AgriData = {
   },
 
   recalculateKPIs() {
-    const totalArea = this.data.plots.reduce((sum, p) => sum + (parseFloat(p.tong_dt) || 0), 0);
-    const totalQuy1 = this.data.plots.reduce((sum, p) => sum + (parseFloat(p.quy_1) || 0), 0);
-    const totalQuy2 = this.data.plots.reduce((sum, p) => sum + (parseFloat(p.quy_2) || 0), 0);
-    const rentedPlots = this.data.plots.filter(p => p.is_rented);
+    if (!this.data) return;
+    const plots = this.data.plots || [];
+    const farmers = this.data.farmers || [];
+    const zones = this.data.zones || [];
+
+    const totalArea = plots.reduce((sum, p) => sum + (parseFloat(p.tong_dt) || 0), 0);
+    const totalQuy1 = plots.reduce((sum, p) => sum + (parseFloat(p.quy_1) || 0), 0);
+    const totalQuy2 = plots.reduce((sum, p) => sum + (parseFloat(p.quy_2) || 0), 0);
+    
+    // Đất tích tụ/thuê mượn: is_rented = true hoặc Hộ sản xuất khác Chủ ruộng
+    const rentedPlots = plots.filter(p => p.is_rented || (p.ho_sx && p.chu_ruong && p.ho_sx.trim().toLowerCase() !== p.chu_ruong.trim().toLowerCase()));
     const rentedArea = rentedPlots.reduce((sum, p) => sum + (parseFloat(p.tong_dt) || 0), 0);
+    
+    const rentedPct = totalArea > 0 ? Number(((rentedArea / totalArea) * 100).toFixed(1)) : (plots.length > 0 ? Number(((rentedPlots.length / plots.length) * 100).toFixed(1)) : 0);
+    const q1Pct = totalArea > 0 ? Number(((totalQuy1 / totalArea) * 100).toFixed(1)) : 0;
+    const q2Pct = totalArea > 0 ? Number(((totalQuy2 / totalArea) * 100).toFixed(1)) : 0;
+    const totalHa = Number((totalArea / 10000).toFixed(2));
+    const avgPlotM2 = plots.length > 0 ? Number((totalArea / plots.length).toFixed(1)) : 0;
+    const avgFarmerDt = farmers.length > 0 ? Number((totalArea / farmers.length).toFixed(1)) : 0;
+    const avgFarmerPlots = farmers.length > 0 ? Number((plots.length / farmers.length).toFixed(1)) : 0;
 
     this.data.kpis = {
-      tong_dien_tich_m2: totalArea,
-      tong_dien_tich_ha: Number((totalArea / 10000).toFixed(2)),
-      tong_so_thua: this.data.plots.length,
-      tong_so_ho: this.data.farmers.length,
-      tong_so_xu_dong: this.data.zones.length,
+      // Standard English keys (used by analytics.js, admin.js, etc.)
+      total_plots: plots.length,
+      total_area_m2: totalArea,
+      total_area_ha: totalHa,
       quy_1_m2: totalQuy1,
+      quy_1_ha: Number((totalQuy1 / 10000).toFixed(2)),
+      quy_1_pct: q1Pct,
       quy_2_m2: totalQuy2,
+      quy_2_ha: Number((totalQuy2 / 10000).toFixed(2)),
+      quy_2_pct: q2Pct,
+      total_farmers: farmers.length,
+      total_landowners: new Set(plots.map(p => p.chu_ruong).filter(Boolean)).size,
+      total_zones: zones.length,
+      rented_plots: rentedPlots.length,
+      rented_pct: rentedPct,
+      avg_plot_m2: avgPlotM2,
+      avg_farmer_dt_m2: avgFarmerDt,
+      avg_farmer_plots: avgFarmerPlots,
+
+      // Aliased Vietnamese keys (for backward compatibility)
+      tong_dien_tich_m2: totalArea,
+      tong_dien_tich_ha: totalHa,
+      tong_so_thua: plots.length,
+      tong_so_ho: farmers.length,
+      tong_so_xu_dong: zones.length,
       dt_tich_tu_m2: rentedArea,
-      ty_le_tich_tu: totalArea > 0 ? Number(((rentedArea / totalArea) * 100).toFixed(1)) : 0
+      ty_le_tich_tu: rentedPct
     };
   },
 
