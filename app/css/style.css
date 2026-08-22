@@ -862,38 +862,51 @@ body.dark-mode .zone-name-tag span {
 .parcel-name-badge {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   color: #0f172a;
-  padding: 2px 6px;
-  border-radius: 6px;
-  border: 1px solid rgba(16, 185, 129, 0.45);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+  padding: 3px;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  min-height: 22px;
+  border: 1.5px solid #10b981;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.22);
   font-family: inherit;
   font-size: 10px;
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1;
   white-space: nowrap;
   transform: translate(-50%, -50%);
   cursor: pointer;
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
   z-index: 500;
+  box-sizing: border-box;
 }
 
-.parcel-name-badge:hover {
-  transform: translate(-50%, -50%) scale(1.12);
-  z-index: 1000 !important;
-  background: #ffffff;
+.parcel-name-badge.rented {
   border-color: #f59e0b;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .parcel-name-badge .p-icon {
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Ẩn phần text chi tiết ở trạng thái mặc định */
+.parcel-name-badge .p-info-reveal {
+  display: none;
+  align-items: center;
+  gap: 3px;
+  margin-left: 4px;
 }
 
 .parcel-name-badge .p-stt {
@@ -903,6 +916,7 @@ body.dark-mode .zone-name-tag span {
   font-weight: 800;
   padding: 1px 4px;
   border-radius: 3px;
+  line-height: 1.2;
 }
 
 .parcel-name-badge.rented .p-stt {
@@ -912,22 +926,55 @@ body.dark-mode .zone-name-tag span {
 .parcel-name-badge .p-name {
   color: #1e293b;
   font-weight: 700;
-  max-width: 95px;
+  font-size: 10.5px;
+  max-width: 120px;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.2;
 }
 
 .parcel-name-badge .p-area {
   color: #64748b;
   font-size: 9px;
   font-weight: 600;
+  line-height: 1.2;
+}
+
+/* KHI DI CHUỘT (HOVER): Mở rộng hiển thị tên hộ sản xuất & số thửa */
+.parcel-name-badge:hover,
+.parcel-div-marker:hover .parcel-name-badge {
+  width: auto;
+  height: auto;
+  min-width: 0;
+  min-height: 0;
+  border-radius: 6px;
+  padding: 2px 7px;
+  background: #ffffff;
+  border-color: #f59e0b;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  transform: translate(-50%, -50%) scale(1.08);
+  z-index: 1000 !important;
+}
+
+.parcel-name-badge:hover .p-info-reveal,
+.parcel-div-marker:hover .parcel-name-badge .p-info-reveal {
+  display: inline-flex;
 }
 
 body.dark-mode .parcel-name-badge {
-  background: rgba(15, 23, 42, 0.92);
+  background: rgba(15, 23, 42, 0.94);
   color: #f8fafc;
-  border-color: rgba(16, 185, 129, 0.5);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  border-color: #10b981;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-mode .parcel-name-badge.rented {
+  border-color: #f59e0b;
+}
+
+body.dark-mode .parcel-name-badge:hover {
+  background: #0f172a;
+  border-color: #f59e0b;
 }
 
 body.dark-mode .parcel-name-badge .p-name {

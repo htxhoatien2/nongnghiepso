@@ -400,21 +400,23 @@ const AgriMap = {
         }
       });
 
-      // 2. Farmer Name & Parcel Badge Marker (divIcon with small icon & font)
+      // 2. Farmer Name & Parcel Badge Marker (Chỉ hiển thị icon nhỏ, hover để xem tên hộ SX)
       const badgeHtml = `
         <div class="parcel-name-badge ${isRented ? 'rented' : 'owner'}" title="Thửa #${p.stt}: ${p.ho_sx} (${p.tong_dt}m²)">
           <span class="p-icon">🌾</span>
-          <span class="p-stt">#${p.stt}</span>
-          <span class="p-name">${p.ho_sx || 'Hộ SX'}</span>
-          <span class="p-area">${p.tong_dt || 0}m²</span>
+          <div class="p-info-reveal">
+            <span class="p-stt">#${p.stt}</span>
+            <span class="p-name">${p.ho_sx || 'Hộ SX'}</span>
+            <span class="p-area">${p.tong_dt || 0}m²</span>
+          </div>
         </div>
       `;
 
       const badgeIcon = L.divIcon({
         className: 'parcel-div-marker',
         html: badgeHtml,
-        iconSize: [110, 24],
-        iconAnchor: [55, 12]
+        iconSize: [22, 22],
+        iconAnchor: [11, 11]
       });
 
       const badgeMarker = L.marker([centerLat, centerLng], { icon: badgeIcon });
