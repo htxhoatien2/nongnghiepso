@@ -922,6 +922,8 @@ body.dark-mode .zone-name-tag span {
   max-height: 64vh;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .map-sheet.open {
@@ -942,6 +944,7 @@ body.dark-mode .map-sheet {
     top: 16px;
     bottom: auto;
     width: 380px;
+    max-width: calc(100vw - 32px);
     max-height: calc(100vh - 130px);
     border-radius: 16px;
     border: 1px solid var(--border-color);
@@ -977,10 +980,12 @@ body.dark-mode .map-sheet {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  padding: 10px 14px 8px;
+  padding: 10px 12px 8px;
   border-bottom: 1px solid var(--border-subtle);
   gap: 8px;
   background: var(--bg-surface);
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .sheet-header-main {
@@ -1101,14 +1106,16 @@ body.dark-mode .map-sheet {
   height: 14px;
 }
 
-/* Quick Action Chips Bar */
+/* Quick Action Chips Bar: 3 Cột Đều Nhau Khóa Tràn Mép */
 .sheet-actions-bar {
-  padding: 6px 14px;
+  padding: 6px 12px;
   display: grid;
-  grid-template-columns: 1.2fr 1fr 0.9fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border-subtle);
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .sheet-action-chip {
@@ -1116,9 +1123,9 @@ body.dark-mode .map-sheet {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  padding: 5px 6px;
+  padding: 6px 2px;
   border-radius: 7px;
-  font-size: 0.7rem;
+  font-size: 0.69rem;
   font-weight: 700;
   border: 1px solid var(--border-color);
   background: var(--bg-app);
@@ -1126,6 +1133,16 @@ body.dark-mode .map-sheet {
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.15s ease;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.sheet-action-chip span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sheet-action-chip i {
@@ -1148,6 +1165,9 @@ body.dark-mode .map-sheet {
 }
 
 .sheet-action-chip.chip-nav-maps:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(26, 115, 232, 0.4);
+}
   transform: translateY(-1px);
   box-shadow: 0 3px 8px rgba(26, 115, 232, 0.4);
 }
