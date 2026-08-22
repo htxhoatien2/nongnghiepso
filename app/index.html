@@ -58,7 +58,7 @@
   </script>
 
   <!-- Custom CSS with Cache Buster -->
-  <link rel="stylesheet" href="css/style.css?v=3.2.4">
+  <link rel="stylesheet" href="css/style.css?v=3.2.5">
 </head>
 <body class="light-mode">
   <div id="app" class="app-container">
@@ -356,12 +356,12 @@
 
                 <div class="form-group" style="margin-bottom: 10px;">
                   <label class="form-label" style="font-weight: 700; font-size: 0.84rem;">Email / Tài Khoản / SĐT</label>
-                  <input type="text" id="home-login-account" class="form-input" placeholder="Ví dụ: giamdoc hoặc canbo@gmail.com" value="giamdoc" onkeydown="if(event.key==='Enter') AgriAuth.handleStandardLogin('home')">
+                  <input type="text" id="home-login-account" class="form-input" placeholder="Nhập Email, tài khoản hoặc SĐT..." onkeydown="if(event.key==='Enter') AgriAuth.handleStandardLogin('home')">
                 </div>
 
                 <div class="form-group" style="margin-bottom: 12px;">
                   <label class="form-label" style="font-weight: 700; font-size: 0.84rem;">Mã PIN / Mật Khẩu</label>
-                  <input type="password" id="home-login-pin" class="form-input" placeholder="Nhập mật khẩu" value="8888" onkeydown="if(event.key==='Enter') AgriAuth.handleStandardLogin('home')">
+                  <input type="password" id="home-login-pin" class="form-input" placeholder="Nhập mật khẩu hoặc PIN..." onkeydown="if(event.key==='Enter') AgriAuth.handleStandardLogin('home')">
                 </div>
 
                 <button class="btn btn-emerald" style="width: 100%; padding: 10px; font-weight: 800; font-size: 0.95rem;" onclick="AgriAuth.handleStandardLogin('home')">
@@ -465,7 +465,7 @@
 
                 <div class="form-group" style="margin-bottom: 12px;">
                   <label class="form-label" style="font-weight: 700; font-size: 0.84rem;">Mã PIN Mới Mong Muốn</label>
-                  <input type="text" maxlength="6" id="home-forgot-new-pin" class="form-input" value="1234">
+                  <input type="password" maxlength="6" id="home-forgot-new-pin" class="form-input" placeholder="Nhập mã PIN mới (ít nhất 4 số)...">
                 </div>
 
                 <button class="btn btn-emerald" style="width: 100%; padding: 10px; font-weight: 800;" onclick="document.getElementById('auth-forgot-account').value=document.getElementById('home-forgot-account').value; document.getElementById('auth-forgot-new-pin').value=document.getElementById('home-forgot-new-pin').value; AgriAuth.handleForgotPasswordSubmit();">
@@ -3783,23 +3783,23 @@
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 
   <!-- Embedded Data (Offline & file:// protocol support) -->
-  <script src="data/data_embedded.js?v=3.2.4"></script>
+  <script src="data/data_embedded.js?v=3.2.5"></script>
 
   <!-- Supabase JS SDK (v2) from CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase_config.js?v=3.2.4"></script>
+  <script src="js/supabase_config.js?v=3.2.5"></script>
 
   <!-- App JS Modules with Cache Buster -->
-  <script src="js/data.js?v=3.2.4"></script>
-  <script src="js/auth.js?v=3.2.4"></script>
-  <script src="js/sync.js?v=3.2.4"></script>
-  <script src="js/admin.js?v=3.2.4"></script>
-  <script src="js/map.js?v=3.2.4"></script>
-  <script src="js/records.js?v=3.2.4"></script>
-  <script src="js/farmers.js?v=3.2.4"></script>
-  <script src="js/analytics.js?v=3.2.4"></script>
-  <script src="js/services.js?v=3.2.4"></script>
-  <script src="js/purchasing.js?v=3.2.4"></script>
-  <script src="js/app.js?v=3.2.4"></script>
+  <script src="js/data.js?v=3.2.5"></script>
+  <script src="js/auth.js?v=3.2.5"></script>
+  <script src="js/sync.js?v=3.2.5"></script>
+  <script src="js/admin.js?v=3.2.5"></script>
+  <script src="js/map.js?v=3.2.5"></script>
+  <script src="js/records.js?v=3.2.5"></script>
+  <script src="js/farmers.js?v=3.2.5"></script>
+  <script src="js/analytics.js?v=3.2.5"></script>
+  <script src="js/services.js?v=3.2.5"></script>
+  <script src="js/purchasing.js?v=3.2.5"></script>
+  <script src="js/app.js?v=3.2.5"></script>
 </body>
 </html>
