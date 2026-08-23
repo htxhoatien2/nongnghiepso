@@ -808,15 +808,22 @@ Kính đề nghị hộ nông dân kiểm tra đối soát!`;
     }
 
     AgriData.deletePurchasingSession(sessionId);
+    AgriData.saveCustomRawData();
+    AgriData.persist();
     this.populateFilterDropdowns();
     this.filterSessions();
+    if (window.AgriAnalytics) AgriAnalytics.renderKPIs();
 
     // Realtime Database Live Sync & Supabase Cloud Deletion
     const client = window.supabaseClient || (window.SupabaseConfig && SupabaseConfig.getClient());
     if (client && navigator.onLine) {
       client.from('purchasing_sessions').delete().eq('id', sessionId).then(({ error }) => {
-        if (error) console.warn('⚠️ [Supabase Delete Session Warning]:', error);
-        else console.log('✅ [Supabase Delete Session Success]:', sessionId);
+        if (error) {
+          console.warn('⚠️ [Supabase Delete Session Warning]:', error);
+          if (s.stt) client.from('purchasing_sessions').delete().eq('stt', Number(s.stt)).then(() => {});
+        } else {
+          console.log('✅ [Supabase Delete Session Success]:', sessionId);
+        }
       });
     }
     if (window.AgriSync) {
@@ -1193,9 +1200,27 @@ Kính đề nghị hộ nông dân kiểm tra đối soát!`;
     }
     if (!AgriData.data) AgriData.data = {};
     AgriData.data.purchasing_sessions = [];
+    AgriData.saveCustomRawData();
     AgriData.persist();
     this.populateFilterDropdowns();
     this.filterSessions();
+    if (window.AgriAnalytics) AgriAnalytics.renderKPIs();
+
+    // Xóa toàn bộ dữ liệu trên Supabase Cloud
+    const client = window.supabaseClient || (window.SupabaseConfig && SupabaseConfig.getClient());
+    if (client && navigator.onLine) {
+      client.from('purchasing_sessions').delete().neq('id', '___none___').then(({ error }) => {
+        if (error) console.warn('⚠️ [Supabase Clear All Warning]:', error);
+        else console.log('✅ [Supabase Clear All Success]: All sessions wiped on cloud');
+      });
+    }
+
+    if (window.AgriSync) {
+      AgriSync.broadcastEvent('PURCHASING_ALL_SESSIONS_CLEARED', {});
+    }
+    if (window.AgriAuth) {
+      AgriAuth.logActivity('XÓA TOÀN BỘ PHIÊN CÂN', 'Đã xóa trắng toàn bộ dữ liệu thu mua lúa');
+    }
     alert('Đã xóa trắng toàn bộ dữ liệu phiên cân trong phân hệ Thu Mua thành công!');
   }
 };

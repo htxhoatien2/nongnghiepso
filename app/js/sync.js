@@ -141,65 +141,52 @@ const AgriSync = {
         return;
       }
 
-      if (Array.isArray(remoteSessions) && remoteSessions.length > 0) {
+      if (Array.isArray(remoteSessions)) {
         if (!AgriData.data) AgriData.data = {};
         if (!AgriData.data.purchasing_sessions) AgriData.data.purchasing_sessions = [];
 
-        let hasNewUpdates = false;
-        let newCount = 0;
+        const formattedList = remoteSessions.map(rs => ({
+          id: rs.id,
+          stt: rs.stt || 1,
+          ngay_can: (rs.created_datetime || rs.created_at || '').replace('T', ' ').substring(0, 19),
+          ho_sx: rs.farmer_name || rs.ho_sx || 'Hộ nông dân',
+          dia_chi: rs.farmer_address || rs.dia_chi || '',
+          dien_thoai: rs.farmer_phone || rs.dien_thoai || '',
+          xu_dong: rs.xu_dong || '',
+          can_bo_can: rs.can_bo_can || 'Cán bộ cân',
+          xe_nhan: rs.xe_nhan || 'Xe nhận',
+          loai_giong: rs.loai_giong || 'J02',
+          chi_tiet_can: Array.isArray(rs.batches_json) ? rs.batches_json : (rs.chi_tiet_can || []),
+          tong_so_bao: Number(rs.tong_so_bao || 0),
+          luong_tuoi_kg: Number(rs.luong_tuoi_kg || 0),
+          ty_le_tru_pct: rs.tru_do_am_pct != null ? Number(rs.tru_do_am_pct) : (rs.ty_le_tru_pct != null ? Number(rs.ty_le_tru_pct) : 12),
+          luong_kho_kg: Number(rs.luong_kho_kg || 0),
+          don_gia_kg: Number(rs.don_gia_kg || 8500),
+          thanh_tien: Number(rs.thanh_tien || 0),
+          ghi_chu: rs.note || rs.ghi_chu || ''
+        }));
 
-        remoteSessions.forEach(rs => {
-          const idx = AgriData.data.purchasing_sessions.findIndex(s => s.id === rs.id);
-          const formatted = {
-            id: rs.id,
-            stt: rs.stt || (AgriData.data.purchasing_sessions.length + 1),
-            ngay_can: (rs.created_datetime || rs.created_at || '').replace('T', ' ').substring(0, 19),
-            ho_sx: rs.farmer_name || rs.ho_sx || 'Hộ nông dân',
-            dia_chi: rs.farmer_address || rs.dia_chi || '',
-            dien_thoai: rs.farmer_phone || rs.dien_thoai || '',
-            xu_dong: rs.xu_dong || '',
-            can_bo_can: rs.can_bo_can || 'Cán bộ cân',
-            xe_nhan: rs.xe_nhan || 'Xe nhận',
-            loai_giong: rs.loai_giong || 'J02',
-            chi_tiet_can: Array.isArray(rs.batches_json) ? rs.batches_json : (rs.chi_tiet_can || []),
-            tong_so_bao: Number(rs.tong_so_bao || 0),
-            luong_tuoi_kg: Number(rs.luong_tuoi_kg || 0),
-            ty_le_tru_pct: rs.tru_do_am_pct != null ? Number(rs.tru_do_am_pct) : (rs.ty_le_tru_pct != null ? Number(rs.ty_le_tru_pct) : 12),
-            luong_kho_kg: Number(rs.luong_kho_kg || 0),
-            don_gia_kg: Number(rs.don_gia_kg || 8500),
-            thanh_tien: Number(rs.thanh_tien || 0),
-            ghi_chu: rs.note || rs.ghi_chu || ''
-          };
+        const localList = AgriData.data.purchasing_sessions || [];
+        const isDifferent = localList.length !== formattedList.length ||
+          JSON.stringify(localList.map(s => s.id)) !== JSON.stringify(formattedList.map(s => s.id));
 
-          if (idx >= 0) {
-            // Cập nhật nếu có thay đổi
-            const current = AgriData.data.purchasing_sessions[idx];
-            if (current.thanh_tien !== formatted.thanh_tien || current.tong_so_bao !== formatted.tong_so_bao || current.ho_sx !== formatted.ho_sx) {
-              AgriData.data.purchasing_sessions[idx] = formatted;
-              hasNewUpdates = true;
-            }
-          } else {
-            // Thêm mới
-            AgriData.data.purchasing_sessions.unshift(formatted);
-            hasNewUpdates = true;
-            newCount++;
-          }
-        });
-
-        if (hasNewUpdates) {
+        if (isDifferent) {
+          AgriData.data.purchasing_sessions = formattedList;
           AgriData.saveCustomRawData();
+          AgriData.persist();
+
           if (window.AgriPurchasing) {
-            AgriPurchasing.filterSessions();
             AgriPurchasing.populateFilterDropdowns();
+            AgriPurchasing.filterSessions();
           }
           if (window.AgriAnalytics) {
             AgriAnalytics.renderKPIs();
           }
 
-          if (!isSilent && newCount > 0) {
-            this.showLiveToast(`🌾 [Realtime] Đã tự động đồng bộ ${newCount} phiên cân mới từ đám mây!`);
+          if (!isSilent && formattedList.length > localList.length) {
+            this.showLiveToast(`🌾 [Realtime] Đã tự động đồng bộ ${formattedList.length} phiên cân từ đám mây!`);
           }
-          console.log(`✅ [AgriSync] Đồng bộ thành công ${remoteSessions.length} phiên cân từ Supabase Cloud!`);
+          console.log(`✅ [AgriSync] Đồng bộ chính xác ${formattedList.length} phiên cân từ Supabase Cloud!`);
         }
       }
     } catch (err) {
@@ -384,9 +371,27 @@ const AgriSync = {
       if (id && AgriData && AgriData.data && AgriData.data.purchasing_sessions) {
         AgriData.data.purchasing_sessions = AgriData.data.purchasing_sessions.filter(item => item.id !== id);
         AgriData.saveCustomRawData();
+        AgriData.persist();
       }
-      if (window.AgriPurchasing) AgriPurchasing.filterSessions();
+      if (window.AgriPurchasing) {
+        AgriPurchasing.populateFilterDropdowns();
+        AgriPurchasing.filterSessions();
+      }
       if (window.AgriAnalytics) AgriAnalytics.renderKPIs();
+    } else if (packet.type === 'PURCHASING_ALL_SESSIONS_CLEARED') {
+      if (AgriData && AgriData.data) {
+        AgriData.data.purchasing_sessions = [];
+        AgriData.saveCustomRawData();
+        AgriData.persist();
+      }
+      if (window.AgriPurchasing) {
+        AgriPurchasing.populateFilterDropdowns();
+        AgriPurchasing.filterSessions();
+      }
+      if (window.AgriAnalytics) AgriAnalytics.renderKPIs();
+      if (!isLocalBroadcast) {
+        this.showLiveToast('🗑️ [Realtime] Toàn bộ dữ liệu thu mua vừa được làm sạch từ thiết bị khác.');
+      }
     } else if (packet.type === 'ZONE_UPDATED') {
       const { zoneName, geoJson, plots } = packet.payload || {};
       if (geoJson && AgriData) {
