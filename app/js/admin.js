@@ -291,7 +291,7 @@ const AgriAdmin = {
           <td><span class="badge badge-purple">${u.roleName}</span></td>
           <td class="center-cell"><span class="badge ${permTier.badgeClass}" style="font-weight: 700;">${permTier.label}</span></td>
           <td class="center-cell">
-            <code style="background: var(--bg-app); padding: 3px 8px; border-radius: 4px; font-weight: 700; font-size: 0.88rem; color: var(--amber); border: 1px solid var(--border-subtle);">${u.pin}</code>
+            <span style="font-family: monospace; letter-spacing: 2px; font-weight: 700; color: var(--text-muted); font-size: 0.95rem;">••••••</span>
           </td>
           <td>
             <div style="font-size: 0.82rem;">
@@ -305,9 +305,6 @@ const AgriAdmin = {
           <td class="center-cell" style="white-space: nowrap;">
             <button class="btn btn-sm btn-outline" onclick="AgriAdmin.viewUserProfile('${u.id}')" title="Xem hồ sơ chi tiết">
               <i data-lucide="eye"></i>
-            </button>
-            <button class="btn btn-sm btn-emerald" onclick="AgriAdmin.quickLoginAsUser('${u.id}')" title="Đăng nhập với vai trò này">
-              <i data-lucide="log-in"></i>
             </button>
             <button class="btn btn-sm btn-outline" onclick="AgriAdmin.openEditUserModal('${u.id}')" title="Chỉnh sửa thông tin">
               <i data-lucide="edit-2"></i>
