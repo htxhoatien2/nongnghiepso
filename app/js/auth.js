@@ -158,8 +158,11 @@ const AgriAuth = {
     }
   },
 
-  savePermissions() {
+  savePermissions(shouldBroadcast = true) {
     localStorage.setItem('agrigis_permissions_matrix', JSON.stringify(this.permissions));
+    if (shouldBroadcast && window.AgriSync && typeof AgriSync.broadcastEvent === 'function') {
+      AgriSync.broadcastEvent('AGRIGIS_PERMISSIONS_UPDATED', { permissions: this.permissions });
+    }
   },
 
   loadUsers() {
@@ -194,11 +197,14 @@ const AgriAuth = {
       });
       this.users = loaded;
     }
-    this.saveUsers();
+    this.saveUsers(false);
   },
 
-  saveUsers() {
+  saveUsers(shouldBroadcast = true) {
     localStorage.setItem('agrigis_users', JSON.stringify(this.users));
+    if (shouldBroadcast && window.AgriSync && typeof AgriSync.broadcastEvent === 'function') {
+      AgriSync.broadcastEvent('AGRIGIS_USERS_UPDATED', { users: this.users });
+    }
   },
 
   loadLogs() {
@@ -214,8 +220,11 @@ const AgriAuth = {
     }
   },
 
-  saveLogs() {
+  saveLogs(shouldBroadcast = true, newLog = null) {
     localStorage.setItem('agrigis_audit_logs', JSON.stringify(this.logs));
+    if (shouldBroadcast && window.AgriSync && typeof AgriSync.broadcastEvent === 'function') {
+      AgriSync.broadcastEvent('AGRIGIS_AUDIT_LOG_ADDED', { log: newLog, logs: this.logs });
+    }
   },
 
   restoreSession() {
@@ -1379,8 +1388,11 @@ const AgriAuth = {
     return this.pendingUsers;
   },
 
-  savePendingUsers() {
+  savePendingUsers(shouldBroadcast = true) {
     localStorage.setItem('agrigis_pending_users', JSON.stringify(this.pendingUsers));
+    if (shouldBroadcast && window.AgriSync && typeof AgriSync.broadcastEvent === 'function') {
+      AgriSync.broadcastEvent('AGRIGIS_PENDING_USERS_UPDATED', { pendingUsers: this.pendingUsers });
+    }
   },
 
   getPendingUsersCount() {

@@ -853,8 +853,11 @@ const AgriAdmin = {
     }
   },
 
-  saveSeasons() {
+  saveSeasons(shouldBroadcast = true) {
     localStorage.setItem('agrigis_seasons', JSON.stringify(this.seasons));
+    if (shouldBroadcast && window.AgriSync && typeof AgriSync.broadcastEvent === 'function') {
+      AgriSync.broadcastEvent('AGRIGIS_SEASONS_UPDATED', { seasons: this.seasons, ricePrices: this.ricePrices });
+    }
   },
 
   getCurrentSeason() {
@@ -879,11 +882,11 @@ const AgriAdmin = {
     this.ricePrices = s ? { ...s.ricePrices } : { ...this.defaultRicePrices };
   },
 
-  saveRicePrices() {
+  saveRicePrices(shouldBroadcast = true) {
     const s = this.getSeasonById(this.selectedSeasonId);
     if (s) {
       s.ricePrices = { ...this.ricePrices };
-      this.saveSeasons();
+      this.saveSeasons(shouldBroadcast);
       if (s.isCurrent) {
         localStorage.setItem('agrigis_rice_prices', JSON.stringify(this.ricePrices));
       }

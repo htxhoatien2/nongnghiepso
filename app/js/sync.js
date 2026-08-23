@@ -79,6 +79,11 @@ const AgriSync = {
           this.updateStatusBadge('online');
           this.flushBroadcastQueue();
           console.log('✅ [AgriSync] Đã kích hoạt kênh Realtime 2 Chiều thành công!');
+
+          // Yêu cầu đồng bộ toàn bộ trạng thái hệ thống từ các máy trạm đang mở
+          setTimeout(() => {
+            this.broadcastEvent('REQUEST_FULL_SYSTEM_STATE', { time: Date.now() });
+          }, 600);
         } else if (status === 'CHANNEL_ERROR') {
           this.isSupabaseSubscribed = false;
           console.warn('⚠️ [AgriSync] Kênh Realtime báo lỗi (có thể do kết nối mạng):', err);
@@ -189,6 +194,63 @@ const AgriSync = {
           console.log(`✅ [AgriSync] Đồng bộ chính xác ${formattedList.length} phiên cân từ Supabase Cloud!`);
         }
       }
+
+      // 2. Kéo dữ liệu hồ sơ cán bộ / thành viên từ Supabase profiles
+      try {
+        const { data: remoteProfiles, error: profileErr } = await client
+          .from('profiles')
+          .select('*')
+          .limit(100);
+
+        if (!profileErr && Array.isArray(remoteProfiles) && remoteProfiles.length > 0 && window.AgriAuth) {
+          const currentUsers = AgriAuth.users || [];
+          let userChanged = false;
+
+          remoteProfiles.forEach(rp => {
+            const idx = currentUsers.findIndex(u => u.id === rp.id || u.username === rp.username);
+            const formattedU = {
+              id: rp.id,
+              username: rp.username,
+              fullname: rp.fullname,
+              role: rp.role || 'farmer',
+              roleName: rp.role_name || rp.role,
+              phone: rp.phone || '',
+              cccd: rp.cccd || '',
+              ngay_sinh: rp.ngay_sinh || '',
+              gioi_tinh: rp.gioi_tinh || 'Nam',
+              dia_chi: rp.dia_chi || '',
+              to_dan_pho: rp.to_dan_pho || 'Tất cả',
+              assigned_zones: rp.assigned_zones || ['Tất cả'],
+              email: rp.email || '',
+              pin: rp.pin || '1234',
+              ghi_chu: rp.ghi_chu || '',
+              date_joined: rp.created_at ? rp.created_at.slice(0, 10) : '2023-01-01',
+              active: rp.status !== 'locked'
+            };
+
+            if (idx >= 0) {
+              if (currentUsers[idx].fullname !== formattedU.fullname || currentUsers[idx].role !== formattedU.role || currentUsers[idx].active !== formattedU.active) {
+                currentUsers[idx] = { ...currentUsers[idx], ...formattedU };
+                userChanged = true;
+              }
+            } else {
+              currentUsers.push(formattedU);
+              userChanged = true;
+            }
+          });
+
+          if (userChanged) {
+            AgriAuth.users = currentUsers;
+            AgriAuth.saveUsers(false);
+            if (window.AgriAdmin) {
+              AgriAdmin.renderKPIsRibbon();
+              AgriAdmin.renderUsersTable();
+            }
+            AgriAuth.updateUserUI();
+          }
+        }
+      } catch (pErr) {}
+
     } catch (err) {
       console.warn('⚠️ [AgriSync] pullCloudData exception:', err);
     }
@@ -450,6 +512,136 @@ const AgriSync = {
     } else if (packet.type === 'PAYMENT_UPDATED') {
       if (window.AgriServices && window.App.currentTab === 'tab-services') AgriServices.render();
       if (window.AgriAnalytics) AgriAnalytics.renderKPIs();
+    } else if (packet.type === 'REQUEST_FULL_SYSTEM_STATE') {
+      // Thiết bị khác đang mở và yêu cầu đồng bộ trạng thái mới nhất
+      if (window.AgriAuth && AgriAuth.users && AgriAuth.users.length > 0) {
+        this.broadcastEvent('RESPONSE_FULL_SYSTEM_STATE', {
+          users: AgriAuth.users,
+          pendingUsers: AgriAuth.pendingUsers || [],
+          permissions: AgriAuth.permissions || {},
+          seasons: window.AgriAdmin ? AgriAdmin.seasons : null,
+          ricePrices: window.AgriAdmin ? AgriAdmin.ricePrices : null,
+          purchasing_sessions: (window.AgriData && AgriData.data) ? AgriData.data.purchasing_sessions : []
+        });
+      }
+    } else if (packet.type === 'RESPONSE_FULL_SYSTEM_STATE') {
+      const { users, pendingUsers, permissions, seasons, ricePrices, purchasing_sessions } = packet.payload || {};
+      let changed = false;
+
+      // 1. Đồng bộ Thành Viên Cán Bộ
+      if (Array.isArray(users) && users.length > 0 && window.AgriAuth) {
+        if (!AgriAuth.users || users.length >= AgriAuth.users.length) {
+          AgriAuth.users = users;
+          AgriAuth.saveUsers(false);
+          changed = true;
+        }
+      }
+
+      // 2. Đồng bộ Hồ sơ Đăng ký chờ duyệt
+      if (Array.isArray(pendingUsers) && window.AgriAuth) {
+        AgriAuth.pendingUsers = pendingUsers;
+        AgriAuth.savePendingUsers(false);
+        changed = true;
+      }
+
+      // 3. Đồng bộ Ma trận Phân quyền RBAC
+      if (permissions && typeof permissions === 'object' && window.AgriAuth) {
+        AgriAuth.permissions = permissions;
+        AgriAuth.savePermissions(false);
+        AgriAuth.applyRoleRestrictions();
+        changed = true;
+      }
+
+      // 4. Đồng bộ Niên vụ & Biểu giá
+      if (Array.isArray(seasons) && window.AgriAdmin) {
+        AgriAdmin.seasons = seasons;
+        if (ricePrices) AgriAdmin.ricePrices = ricePrices;
+        AgriAdmin.saveSeasons(false);
+        changed = true;
+      }
+
+      // 5. Đồng bộ Phiên cân Thu mua lúa
+      if (Array.isArray(purchasing_sessions) && window.AgriData && AgriData.data) {
+        AgriData.data.purchasing_sessions = purchasing_sessions;
+        AgriData.saveCustomRawData();
+        AgriData.persist();
+        if (window.AgriPurchasing) {
+          AgriPurchasing.populateFilterDropdowns();
+          AgriPurchasing.filterSessions();
+        }
+        if (window.AgriAnalytics) AgriAnalytics.renderKPIs();
+      }
+
+      if (changed) {
+        if (window.AgriAdmin) AgriAdmin.render();
+        if (window.AgriAuth) AgriAuth.updateUserUI();
+        console.log('✅ [AgriSync] Đã nhận và đồng bộ toàn diện trạng thái hệ thống từ máy trạm khác!');
+      }
+    } else if (packet.type === 'AGRIGIS_USERS_UPDATED') {
+      const users = packet.payload?.users;
+      if (Array.isArray(users) && users.length > 0 && window.AgriAuth) {
+        AgriAuth.users = users;
+        AgriAuth.saveUsers(false);
+        if (window.AgriAdmin) {
+          AgriAdmin.renderKPIsRibbon();
+          AgriAdmin.renderUsersTable();
+        }
+        AgriAuth.updateUserUI();
+        if (!isLocalBroadcast) {
+          this.showLiveToast('👤 [Realtime] Danh sách thành viên cán bộ vừa được đồng bộ!');
+        }
+      }
+    } else if (packet.type === 'AGRIGIS_PENDING_USERS_UPDATED') {
+      const pending = packet.payload?.pendingUsers;
+      if (Array.isArray(pending) && window.AgriAuth) {
+        AgriAuth.pendingUsers = pending;
+        AgriAuth.savePendingUsers(false);
+        if (window.AgriAdmin) {
+          AgriAdmin.renderPendingApprovalsTable();
+          AgriAdmin.updatePendingCountBadges();
+        }
+        if (!isLocalBroadcast) {
+          this.showLiveToast('📋 [Realtime] Danh sách hồ sơ chờ duyệt vừa được cập nhật!');
+        }
+      }
+    } else if (packet.type === 'AGRIGIS_PERMISSIONS_UPDATED') {
+      const perms = packet.payload?.permissions;
+      if (perms && window.AgriAuth) {
+        AgriAuth.permissions = perms;
+        AgriAuth.savePermissions(false);
+        AgriAuth.applyRoleRestrictions();
+        if (window.AgriAdmin) {
+          AgriAdmin.renderRBACMatrix();
+          AgriAdmin.renderKPIsRibbon();
+        }
+        if (!isLocalBroadcast) {
+          this.showLiveToast('🛡️ [Realtime] Ma trận phân quyền RBAC vừa được cập nhật!');
+        }
+      }
+    } else if (packet.type === 'AGRIGIS_SEASONS_UPDATED') {
+      const { seasons, ricePrices } = packet.payload || {};
+      if (Array.isArray(seasons) && window.AgriAdmin) {
+        AgriAdmin.seasons = seasons;
+        if (ricePrices) AgriAdmin.ricePrices = ricePrices;
+        AgriAdmin.saveSeasons(false);
+        AgriAdmin.renderSeasonSettings();
+        AgriAdmin.renderRicePriceSettings();
+        if (!isLocalBroadcast) {
+          this.showLiveToast('🌾 [Realtime] Biểu giá niên vụ đã được cập nhật!');
+        }
+      }
+    } else if (packet.type === 'AGRIGIS_AUDIT_LOG_ADDED') {
+      const log = packet.payload?.log;
+      if (log && window.AgriAuth) {
+        const exists = (AgriAuth.logs || []).some(l => l.id === log.id);
+        if (!exists) {
+          if (!AgriAuth.logs) AgriAuth.logs = [];
+          AgriAuth.logs.unshift(log);
+          if (AgriAuth.logs.length > 500) AgriAuth.logs.pop();
+          AgriAuth.saveLogs(false);
+          if (window.AgriAdmin) AgriAdmin.renderAuditTable();
+        }
+      }
     }
   },
 
