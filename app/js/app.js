@@ -176,7 +176,7 @@ const App = {
     document.querySelectorAll('.header-desktop-nav .d-nav-btn').forEach(btn => {
       const isActive = btn.dataset.tab === tabId;
       btn.classList.toggle('active', isActive);
-      if (isActive && window.innerWidth <= 768) {
+      if (isActive) {
         btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
       }
     });
